@@ -3,23 +3,8 @@
     <div class="heatmap-header">
       <h3 class="heatmap-title">文章动态</h3>
       <div class="heatmap-controls">
-        <!-- 模式切换 -->
-        <div class="mode-switch">
-          <button
-            class="mode-btn"
-            :class="{ active: heatmapMode === 'season' }"
-            @click="setMode('season')"
-            title="四季模式"
-          >四季</button>
-          <button
-            class="mode-btn"
-            :class="{ active: heatmapMode === 'solar' }"
-            @click="setMode('solar')"
-            title="节气模式"
-          >节气</button>
-        </div>
         <!-- 四季选择 -->
-        <div v-if="heatmapMode === 'season'" class="season-switch">
+        <div class="season-switch">
           <button
             v-for="s in seasons"
             :key="s.key"
@@ -30,21 +15,6 @@
           >
             {{ s.icon }}
           </button>
-        </div>
-        <!-- 节气选择 -->
-        <div v-if="heatmapMode === 'solar'" class="solar-switch">
-          <button
-            v-for="st in SOLAR_TERMS"
-            :key="st.key"
-            class="solar-btn"
-            :class="{ active: currentSolarTerm === st.key }"
-            :style="currentSolarTerm === st.key ? { background: st.color, color: getContrastColor(st.color) } : {}"
-            @click="blogStore.currentSolarTerm = st.key"
-            :title="st.name + '：' + st.desc"
-          >
-            {{ st.name }}
-          </button>
-          <span class="solar-desc">{{ activeSolarDesc }}</span>
         </div>
       </div>
     </div>
@@ -89,30 +59,16 @@
     </div>
     <div class="heatmap-footer">
       <div class="heatmap-legend">
-        <template v-if="heatmapMode === 'season'">
-          <div class="legend-item" :class="getLevelClass(0)"></div>
-          <span class="legend-label">0</span>
-          <div class="legend-item" :class="getLevelClass(1)"></div>
-          <span class="legend-label">1</span>
-          <div class="legend-item" :class="getLevelClass(2)"></div>
-          <span class="legend-label">2</span>
-          <div class="legend-item" :class="getLevelClass(3)"></div>
-          <span class="legend-label">3</span>
-          <div class="legend-item" :class="getLevelClass(4)"></div>
-          <span class="legend-label">≥4</span>
-        </template>
-        <template v-else>
-          <div class="legend-item" style="background: #f1f5f9"></div>
-          <span class="legend-label">0</span>
-          <div class="legend-item" :style="{ background: getSolarBaseColor(0.3) }"></div>
-          <span class="legend-label">1</span>
-          <div class="legend-item" :style="{ background: getSolarBaseColor(0.55) }"></div>
-          <span class="legend-label">2</span>
-          <div class="legend-item" :style="{ background: getSolarBaseColor(0.8) }"></div>
-          <span class="legend-label">3</span>
-          <div class="legend-item" :style="{ background: getSolarBaseColor(1) }"></div>
-          <span class="legend-label">≥4</span>
-        </template>
+        <div class="legend-item" :class="getLevelClass(0)"></div>
+        <span class="legend-label">0</span>
+        <div class="legend-item" :class="getLevelClass(1)"></div>
+        <span class="legend-label">1</span>
+        <div class="legend-item" :class="getLevelClass(2)"></div>
+        <span class="legend-label">2</span>
+        <div class="legend-item" :class="getLevelClass(3)"></div>
+        <span class="legend-label">3</span>
+        <div class="legend-item" :class="getLevelClass(4)"></div>
+        <span class="legend-label">≥4</span>
       </div>
       <div class="heatmap-stats">
         <div class="stat-item">
@@ -256,7 +212,6 @@ const activeDays = computed(() => {
 })
 
 const getLevelClass = (count: number): string => {
-  if (heatmapMode.value !== 'season') return 'level-0'
   const season = currentSeason.value
   if (count === 0) return `${season}-level-0`
   if (count === 1) return `${season}-level-1`
@@ -276,6 +231,7 @@ onMounted(() => {
   padding: 20px 24px;
   background: var(--bg-secondary);
   border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 .heatmap-header {
@@ -396,11 +352,14 @@ onMounted(() => {
 
 .heatmap-main {
   width: 100%;
+  min-width: 0;
 }
 
 .heatmap-content {
   display: flex;
   gap: 8px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .month-labels {
@@ -410,6 +369,8 @@ onMounted(() => {
   margin-left: 32px;
   font-size: 0.625rem;
   color: var(--text-tertiary);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .month-label {
@@ -433,10 +394,11 @@ onMounted(() => {
 
 .heatmap-grid {
   flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-rows: repeat(7, 1fr);
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
 }
 

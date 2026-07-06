@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
               target: env.VITE_PROXY_TARGET,
               changeOrigin: true,
             },
+
           },
         }
       : undefined,

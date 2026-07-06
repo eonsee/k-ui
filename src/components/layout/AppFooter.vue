@@ -49,24 +49,25 @@
           </div>
           -->
 
-          <!-- QQ二维码（需要时取消注释）
+          <!-- QQ二维码 -->
           <div class="footer-column">
-            <h4 class="footer-title">QQ</h4>
             <div class="footer-qr">
               <img src="/qr-qq.png" alt="QQ二维码" class="qr-image" />
               <span class="qr-label">扫码添加QQ</span>
             </div>
           </div>
-          -->
         </div>
       </div>
 
       <div class="footer-bottom">
         <p class="copyright">
           © {{ currentYear }} 马业坤 版权所有
+          <span class="footer-separator">|</span>
+          <span class="site-stat-inline">⏱ 本站已健康运行 <strong>{{ runningDays }}</strong> 天</span>
         </p>
         <div class="footer-icp">
           <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+            <img src="https://beian.miit.gov.cn/img/bg_logo.2ce2f33d.png" alt="备案图标" class="icp-logo" />
             桂ICP备2024029466号-3
           </a>
         </div>
@@ -76,10 +77,37 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Github, Twitter, Mail, } from 'lucide-vue-next'
 
-const currentYear = computed(() => new Date().getFullYear())
+// 网站开始运行的时间（YYYY-MM-DD）
+const SITE_START_DATE = '2024-01-01'
+
+const currentYear = ref(new Date().getFullYear())
+const runningDays = ref(1)
+let timer: ReturnType<typeof setInterval> | null = null
+
+const updateRunningDays = () => {
+  const now = new Date()
+  const start = new Date(SITE_START_DATE)
+  const diff = now.getTime() - start.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  runningDays.value = days > 0 ? days : 1
+  currentYear.value = now.getFullYear()
+}
+
+onMounted(() => {
+  updateRunningDays()
+  // 每分钟检查一次，确保跨过午夜时天数自动 +1
+  timer = setInterval(updateRunningDays, 60 * 1000)
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+})
 </script>
 
 <style scoped>
@@ -175,6 +203,31 @@ const currentYear = computed(() => new Date().getFullYear())
   color: var(--text-tertiary);
 }
 
+.copyright,
+.domain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.footer-separator {
+  color: var(--border-color);
+}
+
+.site-stat-inline {
+  display: inline;
+  align-items: baseline;
+}
+
+.site-stat-inline strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
 .footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -183,13 +236,10 @@ const currentYear = computed(() => new Date().getFullYear())
   border-top: 1px solid var(--border-light);
 }
 
-.copyright,
-.domain {
-  font-size: 0.8125rem;
-  color: var(--text-tertiary);
-}
-
 .footer-icp a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.8125rem;
   color: var(--text-tertiary);
   transition: color var(--transition-fast);
@@ -197,6 +247,12 @@ const currentYear = computed(() => new Date().getFullYear())
 
 .footer-icp a:hover {
   color: var(--primary-color);
+}
+
+.icp-logo {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
 }
 
 @media (max-width: 768px) {

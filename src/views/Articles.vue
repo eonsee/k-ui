@@ -7,7 +7,7 @@
           <ActivityHeatmap />
         </div>
         <div class="tree-wrapper">
-          <SeasonTree />
+          <IPCard />
         </div>
       </div>
 
@@ -92,7 +92,7 @@ import { Search, FileQuestion, ChevronLeft, ChevronRight, ChevronsLeft, Chevrons
 import { useBlogStore } from '@/store'
 import ArticleCard from '@/components/article/ArticleCard.vue'
 import ActivityHeatmap from '@/components/article/ActivityHeatmap.vue'
-import SeasonTree from '@/components/article/SeasonTree.vue'
+import IPCard from '@/components/article/IPCard.vue'
 
 const blogStore = useBlogStore()
 const currentPage = ref(1)
@@ -157,17 +157,22 @@ watch(searchQuery, () => {
 
 .top-section {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.4fr 1fr;
+  align-items: stretch;
   gap: 24px;
   margin-bottom: 32px;
 }
 
-.heatmap-wrapper {
-  height: 100%;
+.heatmap-wrapper,
+.tree-wrapper {
+  display: flex;
+  min-height: 180px;
 }
 
-.tree-wrapper {
-  height: 100%;
+.heatmap-wrapper > *,
+.tree-wrapper > * {
+  flex: 1;
+  width: 100%;
 }
 
 .filters-section {
@@ -333,20 +338,38 @@ watch(searchQuery, () => {
   .filters-section {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    margin: 24px 0;
   }
 
   .category-tabs {
-    overflow-x: auto;
     flex-wrap: nowrap;
+    overflow-x: auto;
     padding-bottom: 8px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    scrollbar-width: none;
+  }
+
+  .category-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-tab {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    flex-shrink: 0;
   }
 
   .search-box {
     min-width: 100%;
+    width: 100%;
   }
 
   .articles-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 </style>
