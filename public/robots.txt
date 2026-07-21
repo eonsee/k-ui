@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+# 百度爬虫特殊配置
+User-agent: Baiduspider
+Allow: /
+
+# sitemap 位置
+Sitemap: https://www.mayekun.com/sitemap.xml

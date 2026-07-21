@@ -32,7 +32,7 @@
         </div>
         <div class="hero-visual animate-fade-in" style="animation-delay: 0.4s">
           <div class="hero-avatar-wrapper">
-            <img src="/my.jpg" alt="Avatar" class="hero-avatar" />
+            <img src="/my.jpg" alt="马业坤 - 全栈开发工程师" class="hero-avatar" />
             <div class="avatar-ring"></div>
           </div>
         </div>
