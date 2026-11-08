@@ -692,7 +692,7 @@ export const profile: Profile = {
   name: 'oaken',
   avatar: 'https://picsum.photos/seed/avatar-dev/200/200',
   bio: '全栈开发者，热爱技术与设计。专注于构建优雅、高性能的 Web 应用，致力于用代码创造价值。',
-  title: '全栈开发工程师 / 重度依赖AI患者',
+  title: '全栈开发工程师 / 重度AI依赖患者',
   location: '中国·玉林',
   email: '2532615203@qq.com',
   social: {
