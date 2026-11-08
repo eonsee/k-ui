@@ -5,7 +5,7 @@
         <div class="footer-brand">
           <router-link to="/" class="footer-logo">
             <!-- <span class="gradient-text">mayekkun</span> -->
-            <span class="gradient-text">每一段成长都会有新的热爱</span>
+            <span class="footer-slogan">每一段成长都会有新的热爱</span>
           </router-link>
           <p class="footer-tagline">创造、分享、成长</p>
         </div>
@@ -154,6 +154,14 @@ onUnmounted(() => {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 8px;
+}
+
+.footer-slogan {
+  color: #000;
+}
+
+[data-theme='dark'] .footer-slogan {
+  color: #fff;
 }
 
 .footer-tagline {
