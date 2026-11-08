@@ -6,12 +6,7 @@
     <div class="container header-container">
       <router-link to="/" class="logo" aria-label="马业坤 — 首页">
         <span class="logo-mark" aria-hidden="true">
-          <span class="logo-paren">(</span>
-          <svg class="logo-glyph" viewBox="0 0 16 20" fill="none">
-            <path d="M2 2.5 L8 12 L14 2.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M8 11.5 V16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
-          </svg>
-          <span class="logo-paren">)</span>
+          <span class="logo-paren">(</span>O<span class="logo-paren">)</span>
         </span>
       </router-link>
 
@@ -205,18 +200,11 @@ onUnmounted(() => {
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--text-primary);
+  opacity: 0.45;
 }
 
 .logo-paren {
   font-weight: 400;
-  opacity: 0.45;
-}
-
-.logo-glyph {
-  width: 0.78em;
-  height: auto;
-  margin: 0 -0.02em;
-  flex-shrink: 0;
 }
 
 .nav-menu {
