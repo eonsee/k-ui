@@ -5,7 +5,14 @@
   >
     <div class="container header-container">
       <router-link to="/" class="logo" aria-label="马业坤 — 首页">
-        <img :src="logo" alt="Logo" class="logo-image" />
+        <span class="logo-mark" aria-hidden="true">
+          <span class="logo-paren">(</span>
+          <svg class="logo-glyph" viewBox="0 0 16 20" fill="none">
+            <path d="M2 2.5 L8 12 L14 2.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M8 11.5 V16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+          </svg>
+          <span class="logo-paren">)</span>
+        </span>
       </router-link>
 
       <nav class="nav-menu" aria-label="主导航">
@@ -89,7 +96,6 @@
 import { ref, inject, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Sun, Moon, Menu, X } from 'lucide-vue-next'
-import logo from '@/assets/logo1.png'
 
 const { isDark, toggleTheme } = inject('theme') as {
   isDark: { value: boolean }
@@ -190,9 +196,27 @@ onUnmounted(() => {
   align-items: center;
 }
 
-.logo-image {
-  height: 32px;
-  width: auto;
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.logo-paren {
+  font-weight: 400;
+  opacity: 0.45;
+}
+
+.logo-glyph {
+  width: 0.78em;
+  height: auto;
+  margin: 0 -0.02em;
+  flex-shrink: 0;
 }
 
 .nav-menu {
@@ -383,8 +407,8 @@ onUnmounted(() => {
     display: flex;
   }
 
-  .logo-image {
-    height: 28px;
+  .logo-mark {
+    font-size: 21px;
   }
 }
 </style>
