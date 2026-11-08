@@ -476,6 +476,7 @@ const getBubbleStyle = (index: number) => {
 
 .hero-text {
   max-width: 520px;
+  text-align: center;
 }
 
 .hero-title {
@@ -506,6 +507,7 @@ const getBubbleStyle = (index: number) => {
 .hero-stats {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .hero-stat {
@@ -544,7 +546,7 @@ const getBubbleStyle = (index: number) => {
 
 .hero-avatar-wrap {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
