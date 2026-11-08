@@ -1,13 +1,13 @@
 <template>
   <div class="articles-page">
     <div class="container">
-      <!-- Top Section: Heatmap + Music Player -->
+      <!-- Top Section: Heatmap + Wooden Fish -->
       <div class="top-section">
         <div class="heatmap-wrapper">
           <ActivityHeatmap />
         </div>
-        <div class="tree-wrapper">
-          <IPCard />
+        <div class="fish-wrapper">
+          <WoodenFish />
         </div>
       </div>
 
@@ -92,7 +92,7 @@ import { Search, FileQuestion, ChevronLeft, ChevronRight, ChevronsLeft, Chevrons
 import { useBlogStore } from '@/store'
 import ArticleCard from '@/components/article/ArticleCard.vue'
 import ActivityHeatmap from '@/components/article/ActivityHeatmap.vue'
-import IPCard from '@/components/article/IPCard.vue'
+import WoodenFish from '@/components/article/WoodenFish.vue'
 
 const blogStore = useBlogStore()
 const currentPage = ref(1)
@@ -164,13 +164,13 @@ watch(searchQuery, () => {
 }
 
 .heatmap-wrapper,
-.tree-wrapper {
+.fish-wrapper {
   display: flex;
   min-height: 180px;
 }
 
 .heatmap-wrapper > *,
-.tree-wrapper > * {
+.fish-wrapper > * {
   flex: 1;
   width: 100%;
 }
