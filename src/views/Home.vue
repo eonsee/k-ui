@@ -17,7 +17,7 @@
             </div>
           </div>
           <h1 class="hero-title animate-fade-in-up">
-            Hey，我是 <span class="gradient-text">{{ profile.name }}</span>
+            马业坤
           </h1>
           <p class="hero-subtitle animate-fade-in-up" style="animation-delay: 0.1s">
             {{ profile.title }}
@@ -346,12 +346,13 @@ const worksSectionStyle = computed(() => {
 })
 
 const getBubbleStyle = (index: number) => {
-  const size = Math.random() * 20 + 8
+  // 小气泡居多，偶尔出现大气泡，更接近真实分布
+  const size = Math.pow(Math.random(), 2) * 22 + 6
   const left = Math.random() * 100
   const delay = Math.random() * 5
   const duration = Math.random() * 10 + 12
   const drift = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 24 + 8)
-  const opacity = Math.random() * 0.35 + 0.35
+  const opacity = Math.random() * 0.3 + 0.35
 
   return {
     width: `${size}px`,
@@ -406,47 +407,60 @@ const getBubbleStyle = (index: number) => {
   bottom: -30px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.45) 10%, transparent 26%),
-    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.18) 0%, transparent 55%),
-    radial-gradient(circle at 50% 50%, rgba(120, 180, 255, 0.08) 0%, rgba(120, 180, 255, 0.16) 62%, rgba(120, 180, 255, 0.26) 100%);
-  border: 1px solid rgba(120, 180, 255, 0.35);
+    radial-gradient(ellipse 42% 28% at 32% 24%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 35%, transparent 100%),
+    radial-gradient(ellipse 30% 18% at 68% 78%, rgba(255, 255, 255, 0.45) 0%, transparent 100%),
+    radial-gradient(circle at 50% 50%, rgba(150, 195, 235, 0.02) 0%, rgba(150, 195, 235, 0.1) 55%, rgba(150, 195, 235, 0.26) 90%, rgba(255, 255, 255, 0.75) 100%);
+  border: 1px solid rgba(130, 175, 220, 0.45);
   box-shadow:
-    inset -2px -3px 6px rgba(255, 255, 255, 0.35),
-    inset 2px 2px 5px rgba(120, 180, 255, 0.12),
-    0 0 12px rgba(120, 180, 255, 0.18);
+    inset -2px -3px 5px rgba(255, 255, 255, 0.4),
+    inset 2px 2px 6px rgba(140, 190, 235, 0.14),
+    0 1px 4px rgba(120, 170, 220, 0.1);
   opacity: 0;
   animation: bubble-rise linear infinite;
   will-change: transform, opacity;
 }
 
 [data-theme='dark'] .bubble {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(210, 230, 255, 0.3);
   background:
-    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 10%, transparent 26%),
-    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.14) 0%, transparent 55%),
-    radial-gradient(circle at 50% 50%, rgba(120, 180, 255, 0.1) 0%, rgba(120, 180, 255, 0.2) 62%, rgba(120, 180, 255, 0.3) 100%);
+    radial-gradient(ellipse 42% 28% at 32% 24%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 35%, transparent 100%),
+    radial-gradient(ellipse 30% 18% at 68% 78%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(circle at 50% 50%, rgba(150, 200, 255, 0.04) 0%, rgba(150, 200, 255, 0.1) 55%, rgba(150, 200, 255, 0.28) 90%, rgba(255, 255, 255, 0.7) 100%);
   box-shadow:
-    inset -2px -3px 6px rgba(255, 255, 255, 0.2),
-    inset 2px 2px 5px rgba(120, 180, 255, 0.08),
-    0 0 14px rgba(120, 180, 255, 0.16);
+    inset -2px -3px 5px rgba(255, 255, 255, 0.25),
+    inset 2px 2px 6px rgba(150, 200, 255, 0.1),
+    0 1px 6px rgba(150, 200, 255, 0.12);
 }
 
 @keyframes bubble-rise {
   0% {
-    transform: translate3d(0, 0, 0) scale(0.85);
+    transform: translate3d(0, 0, 0) scale(0.8);
     opacity: 0;
   }
-  8% {
+  6% {
     opacity: var(--bubble-opacity, 0.4);
   }
-  50% {
-    transform: translate3d(var(--drift, 16px), -50vh, 0) scale(1);
+  20% {
+    transform: translate3d(calc(var(--drift, 16px) * 0.45), -22vh, 0) scale(1.02);
+    border-radius: 49% 51% 50% 50% / 51% 49% 51% 49%;
   }
-  88% {
+  36% {
+    transform: translate3d(calc(var(--drift, 16px) * -0.3), -38vh, 0) scale(0.97);
+    border-radius: 51% 49% 49% 51% / 49% 51% 49% 51%;
+  }
+  52% {
+    transform: translate3d(var(--drift, 16px), -54vh, 0) scale(1.04);
+    border-radius: 50% 50% 51% 49% / 50% 50% 49% 51%;
+  }
+  68% {
+    transform: translate3d(calc(var(--drift, 16px) * 0.35), -70vh, 0) scale(0.99);
+    border-radius: 49% 51% 50% 50% / 51% 49% 50% 50%;
+  }
+  84% {
     opacity: var(--bubble-opacity, 0.4);
   }
   100% {
-    transform: translate3d(calc(var(--drift, 16px) * -0.5), -105vh, 0) scale(1.08);
+    transform: translate3d(calc(var(--drift, 16px) * -0.45), -105vh, 0) scale(1.08);
     opacity: 0;
   }
 }
@@ -469,6 +483,11 @@ const getBubbleStyle = (index: number) => {
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 14px;
+  color: #000000;
+}
+
+[data-theme='dark'] .hero-title {
+  color: #ffffff;
 }
 
 .hero-subtitle {
@@ -549,23 +568,16 @@ const getBubbleStyle = (index: number) => {
 
 .avatar-ring {
   position: absolute;
-  inset: -8px;
+  inset: -5px;
   border-radius: 50%;
-  border: 3px solid transparent;
-  background: linear-gradient(white, white) padding-box,
-              var(--primary-gradient) border-box;
-  animation: rotate 10s linear infinite;
+  /* 固定中性色，不跟随四季主题变化 */
+  border: 2px solid rgba(0, 0, 0, 0.18);
   z-index: 0;
   pointer-events: none;
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+[data-theme='dark'] .avatar-ring {
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* 产品轮播（参考 chendahuang.com） */
@@ -1132,11 +1144,6 @@ const getBubbleStyle = (index: number) => {
   .hero-avatar-wrapper {
     width: 96px;
     height: 96px;
-  }
-
-  .avatar-ring {
-    inset: -5px;
-    border-width: 2px;
   }
 
   .works-marquee-item {

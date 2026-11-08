@@ -63,9 +63,15 @@
         <p class="copyright">
           © {{ currentYear }} 马业坤 版权所有
           <span class="footer-separator">|</span>
-          <span class="site-stat-inline">⏱ 本站已健康运行 <strong>{{ runningDays }}</strong> 天</span>
+          <span class="site-stat-inline">
+            <Activity :size="14" :stroke-width="1.8" aria-hidden="true" />
+            本站已健康运行 <strong>{{ runningDays }}</strong> 天
+          </span>
           <span class="footer-separator">|</span>
-          <span class="site-stat-inline">👁 访问量 <strong>{{ visitCount.toLocaleString() }}</strong></span>
+          <span class="site-stat-inline">
+            <Eye :size="14" :stroke-width="1.8" aria-hidden="true" />
+            访问量 <strong>{{ visitCount.toLocaleString() }}</strong>
+          </span>
         </p>
         <div class="footer-icp">
           <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
@@ -80,7 +86,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Github, Twitter, Mail, } from 'lucide-vue-next'
+import { Github, Twitter, Mail, Activity, Eye } from 'lucide-vue-next'
 
 // 网站开始运行的时间（YYYY-MM-DD）
 const SITE_START_DATE = '2024-01-01'
@@ -223,8 +229,13 @@ onUnmounted(() => {
 }
 
 .site-stat-inline {
-  display: inline;
-  align-items: baseline;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.site-stat-inline svg {
+  flex-shrink: 0;
 }
 
 .site-stat-inline strong {
