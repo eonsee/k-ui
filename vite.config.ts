@@ -9,7 +9,8 @@ export default defineConfig(({ mode }) => {
 
   return {
     build: {
-      sourcemap: isDev ? true : 'hidden',
+      // 生产环境不生成 sourcemap，避免完整源码随静态资源公开
+      sourcemap: isDev,
     },
     plugins: [
       vue(),
