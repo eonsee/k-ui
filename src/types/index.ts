@@ -11,6 +11,8 @@ export interface Article {
   updatedAt: string
   readTime: number
   views: number
+  isTop?: number
+  isRecommend?: number
 }
 
 export interface Work {

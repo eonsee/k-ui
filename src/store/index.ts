@@ -77,6 +77,8 @@ function voToArticle(vo: ArticleVO, categoryMap: Map<number, string>): Article {
     updatedAt: vo.createTime || '',
     readTime: vo.readTime || 0,
     views: vo.views || 0,
+    isTop: vo.isTop ?? 0,
+    isRecommend: vo.isRecommend ?? 0,
   }
 }
 

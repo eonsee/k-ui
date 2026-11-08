@@ -281,12 +281,13 @@ onUnmounted(() => {
   if (typingTimeout !== undefined) window.clearTimeout(typingTimeout)
 })
 
-// Hero 数据展示（暂无统计接口，先使用静态数据）
-const heroStats = [
-  { value: 97, label: '精华帖子' },
-  { value: 14, label: '博客文章' },
-  { value: 38, label: '项目' },
-]
+// Hero 数据展示：全部来自后端真实数据
+// 精华帖子 = 后端标记为推荐的（isRecommend=1），博客文章 = 文章总数，项目 = 作品总数
+const heroStats = computed(() => [
+  { value: blogStore.allArticles.filter(article => article.isRecommend === 1).length, label: '精华帖子' },
+  { value: blogStore.allArticles.length, label: '博客文章' },
+  { value: blogStore.allWorks.length, label: '项目' },
+])
 
 const profile = computed(() => blogStore.profileData)
 const works = computed(() => blogStore.allWorks)
