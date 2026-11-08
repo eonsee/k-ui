@@ -5,6 +5,10 @@
 🌐 在线地址：[https://mayekun.com](https://mayekun.com)
 🛠 技术栈：Vue 3 · TypeScript · Vite 5 · Pinia · Vue Router 4 · Axios · TailwindCSS
 
+<p align="center">
+  <img src="docs/images/home.png" alt="首页预览" width="100%" />
+</p>
+
 ---
 
 ## 📑 目录
@@ -122,6 +126,7 @@ mayekun-ui/
 ├── .trae/documents/                 # 项目 PRD 与技术架构文档
 │   ├── prd.md
 │   └── tech-architecture.md
+├── docs/images/home.png             # README 预览图
 ├── .env / .env.development / .env.production
 ├── index.html                       # HTML 模板（含 SEO meta）
 ├── tailwind.config.js / postcss.config.js
