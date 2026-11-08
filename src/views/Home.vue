@@ -12,12 +12,26 @@
         <div class="hero-text">
           <div class="hero-avatar-wrap animate-fade-in-up">
             <div class="hero-avatar-wrapper">
-              <img src="/my.jpg" alt="马业坤 - 全栈开发工程师" class="hero-avatar" />
+              <img src="/my.jpg" alt="oaken - 全栈开发工程师" class="hero-avatar" />
               <div class="avatar-ring"></div>
             </div>
           </div>
-          <h1 class="hero-title animate-fade-in-up">
-            马业坤
+          <h1 class="hero-title animate-fade-in-up" aria-label="oaken">
+            <span class="terminal-line">
+              <span class="terminal-prompt" aria-hidden="true">&gt;</span>
+              <span class="typing-wrap">
+                <span class="typing-placeholder" aria-hidden="true">oaken</span>
+                <span class="typing-live">
+                  <span
+                    v-for="(char, index) in typedChars"
+                    :key="index"
+                    class="typed-char"
+                    aria-hidden="true"
+                  >{{ char }}</span>
+                  <span class="typing-caret" aria-hidden="true"></span>
+                </span>
+              </span>
+            </span>
           </h1>
           <p class="hero-subtitle animate-fade-in-up" style="animation-delay: 0.1s">
             {{ profile.title }}
@@ -197,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { ArrowRight, ChevronDown, ChevronRight, ChevronLeft, ExternalLink, Github, Lock, Monitor } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
 import ArticleCard from '@/components/article/ArticleCard.vue'
@@ -211,6 +225,60 @@ onMounted(async () => {
   await Promise.all([blogStore.fetchCategories(1), blogStore.fetchCategories(2)])
   blogStore.fetchArticles()
   blogStore.fetchWorks()
+})
+
+// ============ 首页姓名打字机效果（循环敲入 / 删除） ============
+const HERO_NAME = 'oaken'
+const typedName = ref('')
+const typedChars = computed(() => typedName.value.split(''))
+
+const TYPE_DELAY = 120
+const DELETE_DELAY = 70
+const HOLD_DELAY = 1800
+const RESTART_DELAY = 600
+
+let typingTimeout: number | undefined
+
+onMounted(() => {
+  // 尊重系统的“减少动态效果”设置，直接显示完整姓名
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    typedName.value = HERO_NAME
+    return
+  }
+
+  let index = 0
+  let deleting = false
+
+  const tick = () => {
+    if (!deleting) {
+      index++
+      typedName.value = HERO_NAME.slice(0, index)
+      if (index === HERO_NAME.length) {
+        // 完整显示一段时间后再退格
+        deleting = true
+        typingTimeout = window.setTimeout(tick, HOLD_DELAY)
+      } else {
+        // 每个字母的间隔略有差异，接近真实敲键盘的节奏
+        typingTimeout = window.setTimeout(tick, TYPE_DELAY + Math.random() * 80)
+      }
+    } else {
+      index--
+      typedName.value = HERO_NAME.slice(0, index)
+      if (index === 0) {
+        // 删完后稍作停顿，重新敲入
+        deleting = false
+        typingTimeout = window.setTimeout(tick, RESTART_DELAY)
+      } else {
+        typingTimeout = window.setTimeout(tick, DELETE_DELAY)
+      }
+    }
+  }
+
+  typingTimeout = window.setTimeout(tick, 400)
+})
+
+onUnmounted(() => {
+  if (typingTimeout !== undefined) window.clearTimeout(typingTimeout)
 })
 
 // Hero 数据展示（暂无统计接口，先使用静态数据）
@@ -489,6 +557,88 @@ const getBubbleStyle = (index: number) => {
 
 [data-theme='dark'] .hero-title {
   color: #ffffff;
+}
+
+/* 终端命令行样式：提示符 + 打字机姓名 */
+.terminal-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.14em;
+}
+
+.terminal-prompt {
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--primary-color);
+  user-select: none;
+}
+
+/* 打字机姓名：占位符预留宽度，打字过程不引起布局抖动 */
+.typing-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.typing-placeholder {
+  visibility: hidden;
+}
+
+.typing-live {
+  position: absolute;
+  top: 0;
+  left: 0;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+.typed-char {
+  display: inline-block;
+  animation: typed-char-in 0.18s ease-out both;
+}
+
+@keyframes typed-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.08em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.typing-caret {
+  display: inline-block;
+  width: 0.06em;
+  min-width: 2px;
+  height: 0.9em;
+  margin-left: 0.06em;
+  background: currentColor;
+  border-radius: 1px;
+  vertical-align: -0.08em;
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typed-char {
+    animation: none;
+  }
+
+  .typing-caret {
+    animation: none;
+  }
 }
 
 .hero-subtitle {
