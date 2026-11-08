@@ -441,7 +441,7 @@ const shareArticle = () => {
 }
 
 .article-content :deep(code) {
-  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1.6;
 }
@@ -469,7 +469,7 @@ const shareArticle = () => {
   padding: 2px 6px;
   background: var(--bg-secondary);
   border-radius: var(--radius-sm);
-  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
 }
 

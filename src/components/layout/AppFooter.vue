@@ -64,10 +64,12 @@
           © {{ currentYear }} 马业坤 版权所有
           <span class="footer-separator">|</span>
           <span class="site-stat-inline">⏱ 本站已健康运行 <strong>{{ runningDays }}</strong> 天</span>
+          <span class="footer-separator">|</span>
+          <span class="site-stat-inline">👁 访问量 <strong>{{ visitCount.toLocaleString() }}</strong></span>
         </p>
         <div class="footer-icp">
           <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
-            <img src="https://beian.miit.gov.cn/img/bg_logo.2ce2f33d.png" alt="备案图标" class="icp-logo" />
+            <img src="/icp-logo.png" alt="备案图标" class="icp-logo" width="14" height="14" />
             桂ICP备2024029466号-3
           </a>
         </div>
@@ -85,6 +87,8 @@ const SITE_START_DATE = '2024-01-01'
 
 const currentYear = ref(new Date().getFullYear())
 const runningDays = ref(1)
+// 访问量暂无统计接口，先用静态数据占位
+const visitCount = ref(12864)
 let timer: ReturnType<typeof setInterval> | null = null
 
 const updateRunningDays = () => {
@@ -119,7 +123,7 @@ onUnmounted(() => {
 }
 
 [data-theme='dark'] .app-footer {
-  background: rgba(15, 15, 26, 0.8);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .footer-container {
@@ -225,7 +229,8 @@ onUnmounted(() => {
 
 .site-stat-inline strong {
   color: var(--primary-color);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
 
 .footer-bottom {

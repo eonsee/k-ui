@@ -167,7 +167,7 @@ onMounted(() => {
 }
 
 [data-theme='dark'] .music-player {
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
 }
 
 .player-main {

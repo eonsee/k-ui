@@ -4,12 +4,18 @@
     <section class="hero-section">
       <div class="hero-bg">
         <div class="hero-gradient"></div>
-        <div class="hero-particles">
-          <div v-for="i in 20" :key="i" class="particle" :style="getParticleStyle(i)"></div>
+        <div class="hero-bubbles">
+          <div v-for="i in 30" :key="i" class="bubble" :style="getBubbleStyle(i)"></div>
         </div>
       </div>
       <div class="container hero-content">
         <div class="hero-text">
+          <div class="hero-avatar-wrap animate-fade-in-up">
+            <div class="hero-avatar-wrapper">
+              <img src="/my.jpg" alt="马业坤 - 全栈开发工程师" class="hero-avatar" />
+              <div class="avatar-ring"></div>
+            </div>
+          </div>
           <h1 class="hero-title animate-fade-in-up">
             Hey，我是 <span class="gradient-text">{{ profile.name }}</span>
           </h1>
@@ -19,21 +25,33 @@
           <p class="hero-description animate-fade-in-up" style="animation-delay: 0.2s">
             {{ profile.bio }}
           </p>
-          <div class="hero-actions animate-fade-in-up" style="animation-delay: 0.3s">
-            <router-link to="/articles" class="btn btn-primary">
-              <BookOpen :size="18" />
-              浏览文章
-            </router-link>
-            <router-link to="/about" class="btn btn-secondary">
-              <User :size="18" />
-              了解更多
-            </router-link>
+          <div class="hero-stats animate-fade-in-up" style="animation-delay: 0.3s">
+            <div v-for="stat in heroStats" :key="stat.label" class="hero-stat">
+              <span class="hero-stat-value">{{ stat.value }}</span>
+              <span class="hero-stat-label">{{ stat.label }}</span>
+            </div>
           </div>
         </div>
         <div class="hero-visual animate-fade-in" style="animation-delay: 0.4s">
-          <div class="hero-avatar-wrapper">
-            <img src="/my.jpg" alt="马业坤 - 全栈开发工程师" class="hero-avatar" />
-            <div class="avatar-ring"></div>
+          <div class="works-marquee" aria-label="产品轮播">
+            <div
+              v-for="copy in 2"
+              :key="copy"
+              class="works-marquee-track"
+              :aria-hidden="copy > 1"
+            >
+              <a
+                v-for="(work, index) in marqueeWorks"
+                :key="`${copy}-${work.id}-${index}`"
+                :href="work.link || '/works'"
+                :target="work.link ? '_blank' : undefined"
+                :rel="work.link ? 'noopener noreferrer' : undefined"
+                class="works-marquee-item"
+                :title="work.title"
+              >
+                <img :src="work.cover" :alt="work.title" loading="lazy" />
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -175,54 +193,15 @@
         </div>
       </div>
     </section>
-
-    <!-- Stats Section -->
-    <section class="stats-section">
-      <div class="container">
-        <div class="stats-content">
-          <div class="stats-info">
-            <h2 class="stats-title">数据统计</h2>
-            <p class="stats-desc">持续输出高质量内容，记录成长轨迹</p>
-            <div class="stats-grid">
-              <div class="stat-item">
-                <FileText :size="28" class="stat-icon" />
-                <div class="stat-content">
-                  <div class="stat-number">{{ articles.length }}+</div>
-                  <div class="stat-label">篇文章</div>
-                </div>
-              </div>
-              <div class="stat-item">
-                <FolderOpen :size="28" class="stat-icon" />
-                <div class="stat-content">
-                  <div class="stat-number">{{ works.length }}+</div>
-                  <div class="stat-label">个作品</div>
-                </div>
-              </div>
-              <div class="stat-item">
-                <Calendar :size="28" class="stat-icon" />
-                <div class="stat-content">
-                  <div class="stat-number">5+</div>
-                  <div class="stat-label">年经验</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="stats-chart-wrapper">
-            <StatsChart />
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { BookOpen, User, ArrowRight, ChevronDown, ChevronRight, ChevronLeft, FileText, FolderOpen, Calendar, ExternalLink, Github, Lock, Monitor } from 'lucide-vue-next'
+import { ArrowRight, ChevronDown, ChevronRight, ChevronLeft, ExternalLink, Github, Lock, Monitor } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
 import ArticleCard from '@/components/article/ArticleCard.vue'
 import WorkCard from '@/components/work/WorkCard.vue'
-import StatsChart from '@/components/home/StatsChart.vue'
 import type { Work } from '@/types'
 
 const blogStore = useBlogStore()
@@ -234,9 +213,18 @@ onMounted(async () => {
   blogStore.fetchWorks()
 })
 
+// Hero 数据展示（暂无统计接口，先使用静态数据）
+const heroStats = [
+  { value: 97, label: '精华帖子' },
+  { value: 14, label: '博客文章' },
+  { value: 38, label: '项目' },
+]
+
 const profile = computed(() => blogStore.profileData)
-const articles = computed(() => blogStore.allArticles)
 const works = computed(() => blogStore.allWorks)
+
+// 轮播使用的作品封面
+const marqueeWorks = computed(() => works.value.filter(work => work.cover))
 const featuredArticles = computed(() => blogStore.featuredArticles)
 const featuredWorks = computed(() => blogStore.filteredWorks.slice(0, 3))
 
@@ -357,18 +345,22 @@ const worksSectionStyle = computed(() => {
   }
 })
 
-const getParticleStyle = (index: number) => {
-  const size = Math.random() * 4 + 2
+const getBubbleStyle = (index: number) => {
+  const size = Math.random() * 20 + 8
   const left = Math.random() * 100
   const delay = Math.random() * 5
-  const duration = Math.random() * 10 + 10
+  const duration = Math.random() * 10 + 12
+  const drift = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 24 + 8)
+  const opacity = Math.random() * 0.35 + 0.35
 
   return {
     width: `${size}px`,
     height: `${size}px`,
     left: `${left}%`,
     animationDelay: `${delay}s`,
-    animationDuration: `${duration}s`
+    animationDuration: `${duration}s`,
+    '--drift': `${drift.toFixed(1)}px`,
+    '--bubble-opacity': opacity.toFixed(2),
   }
 }
 </script>
@@ -401,33 +393,60 @@ const getParticleStyle = (index: number) => {
               radial-gradient(ellipse at bottom left, rgba(37, 99, 235, 0.08) 0%, transparent 50%);
 }
 
-.hero-particles {
+.hero-bubbles {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.particle {
+/* 海洋气泡 */
+.bubble {
   position: absolute;
-  bottom: -10px;
-  background: var(--primary-color);
+  bottom: -30px;
   border-radius: 50%;
-  opacity: 0.3;
-  animation: float-up linear infinite;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.45) 10%, transparent 26%),
+    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(120, 180, 255, 0.08) 0%, rgba(120, 180, 255, 0.16) 62%, rgba(120, 180, 255, 0.26) 100%);
+  border: 1px solid rgba(120, 180, 255, 0.35);
+  box-shadow:
+    inset -2px -3px 6px rgba(255, 255, 255, 0.35),
+    inset 2px 2px 5px rgba(120, 180, 255, 0.12),
+    0 0 12px rgba(120, 180, 255, 0.18);
+  opacity: 0;
+  animation: bubble-rise linear infinite;
+  will-change: transform, opacity;
 }
 
-@keyframes float-up {
+[data-theme='dark'] .bubble {
+  border-color: rgba(255, 255, 255, 0.3);
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 10%, transparent 26%),
+    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.14) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(120, 180, 255, 0.1) 0%, rgba(120, 180, 255, 0.2) 62%, rgba(120, 180, 255, 0.3) 100%);
+  box-shadow:
+    inset -2px -3px 6px rgba(255, 255, 255, 0.2),
+    inset 2px 2px 5px rgba(120, 180, 255, 0.08),
+    0 0 14px rgba(120, 180, 255, 0.16);
+}
+
+@keyframes bubble-rise {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translate3d(0, 0, 0) scale(0.85);
     opacity: 0;
   }
-  10% {
-    opacity: 0.3;
+  8% {
+    opacity: var(--bubble-opacity, 0.4);
   }
-  90% {
-    opacity: 0.3;
+  50% {
+    transform: translate3d(var(--drift, 16px), -50vh, 0) scale(1);
+  }
+  88% {
+    opacity: var(--bubble-opacity, 0.4);
   }
   100% {
-    transform: translateY(-100vh) rotate(720deg);
+    transform: translate3d(calc(var(--drift, 16px) * -0.5), -105vh, 0) scale(1.08);
     opacity: 0;
   }
 }
@@ -436,84 +455,84 @@ const getParticleStyle = (index: number) => {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 48px;
   align-items: center;
 }
 
 .hero-text {
-  max-width: 600px;
+  max-width: 520px;
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-size: 3rem;
   font-weight: 700;
   line-height: 1.2;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   color: var(--text-secondary);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .hero-description {
-  font-size: 1rem;
-  color: var(--text-tertiary);
-  line-height: 1.8;
-  margin-bottom: 32px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 16px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: var(--radius-lg);
-  font-weight: 500;
   font-size: 0.9375rem;
-  transition: all var(--transition-normal);
+  color: var(--text-tertiary);
+  line-height: 1.75;
+  margin-bottom: 28px;
 }
 
-.btn-primary {
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+.hero-stats {
+  display: flex;
+  align-items: center;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
-  color: white;
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 20px;
+  border-left: 1px solid var(--border-color);
 }
 
-.btn-secondary {
-  background: var(--bg-secondary);
+.hero-stat:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.hero-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 500;
+  line-height: 1.1;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
 }
 
-.btn-secondary:hover {
-  background: var(--bg-tertiary);
-  transform: translateY(-2px);
-  color: var(--text-primary);
+.hero-stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
 }
 
 .hero-visual {
   display: flex;
+  align-items: center;
   justify-content: center;
+  min-width: 0;
+}
+
+.hero-avatar-wrap {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
 }
 
 .hero-avatar-wrapper {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 112px;
+  height: 112px;
   background: var(--bg-secondary);
   border-radius: 50%;
 }
@@ -546,6 +565,73 @@ const getParticleStyle = (index: number) => {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* 产品轮播（参考 chendahuang.com） */
+.works-marquee {
+  --marquee-gap: 32px;
+  --marquee-duration: 20s;
+  display: flex;
+  align-items: center;
+  gap: var(--marquee-gap);
+  width: 100%;
+  overflow: hidden;
+  padding: 16px 0;
+  /* 两侧渐隐：不用背景色遮盖，避免在非纯色 Hero 上出现白色块 */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 33.333%, #000 66.667%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 33.333%, #000 66.667%, transparent 100%);
+}
+
+.works-marquee-track {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--marquee-gap);
+  min-width: max-content;
+  animation: works-marquee var(--marquee-duration) linear infinite;
+}
+
+.works-marquee:hover .works-marquee-track {
+  animation-play-state: paused;
+}
+
+.works-marquee-item {
+  flex-shrink: 0;
+  width: 220px;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transform: rotate(-2deg);
+  transition: transform 0.3s ease;
+}
+
+.works-marquee-item:nth-child(even) {
+  transform: rotate(2deg);
+}
+
+.works-marquee-item:hover {
+  transform: rotate(0deg) scale(1.04);
+}
+
+.works-marquee-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes works-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(-100% - var(--marquee-gap)), 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .works-marquee-track {
+    animation: none;
   }
 }
 
@@ -992,91 +1078,6 @@ const getParticleStyle = (index: number) => {
   font-size: 0.9375rem;
 }
 
-/* Stats Section */
-.stats-section {
-  padding: 80px 0;
-  background: var(--bg-secondary);
-}
-
-.stats-content {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 48px;
-  align-items: stretch;
-}
-
-.stats-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.stats-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--text-primary);
-}
-
-.stats-desc {
-  font-size: 1rem;
-  color: var(--text-tertiary);
-  margin-bottom: 32px;
-}
-
-.stats-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
-  flex: 1;
-}
-
-.stat-item:hover {
-  transform: translateX(8px);
-  box-shadow: var(--shadow-md);
-}
-
-.stat-icon {
-  color: var(--primary-color);
-  flex-shrink: 0;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-number {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: var(--text-tertiary);
-}
-
-.stats-chart-wrapper {
-  background: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
-  margin-top: 52px;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Responsive */
 @media (max-width: 1024px) {
   .hero-content {
@@ -1088,17 +1089,12 @@ const getParticleStyle = (index: number) => {
     max-width: 100%;
   }
 
-  .hero-actions {
+  .hero-stats {
     justify-content: center;
   }
 
-  .hero-visual {
-    order: -1;
-  }
-
-  .hero-avatar-wrapper {
-    width: 240px;
-    height: 240px;
+  .hero-avatar-wrap {
+    justify-content: center;
   }
 
   .articles-grid {
@@ -1125,30 +1121,27 @@ const getParticleStyle = (index: number) => {
     position: static;
   }
 
-  .stats-content {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .stats-grid {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .stat-item {
-    flex: 1;
-    min-width: 140px;
-  }
-
-  .stats-chart-wrapper {
-    margin-top: 0;
-    height: auto;
-  }
 }
 
 @media (max-width: 768px) {
   .hero-title {
     font-size: 2.5rem;
+  }
+
+  /* 移动端头像尺寸与参考站点一致（96px） */
+  .hero-avatar-wrapper {
+    width: 96px;
+    height: 96px;
+  }
+
+  .avatar-ring {
+    inset: -5px;
+    border-width: 2px;
+  }
+
+  .works-marquee-item {
+    width: 180px;
+    height: 180px;
   }
 
   .articles-grid {
@@ -1185,21 +1178,5 @@ const getParticleStyle = (index: number) => {
     margin-left: 0;
   }
 
-  .stats-grid {
-    flex-direction: column;
-  }
-
-  .stat-item {
-    min-width: 100%;
-  }
-
-  .stat-number {
-    font-size: 1.25rem;
-  }
-
-  .stats-chart-wrapper {
-    margin-top: 0;
-    height: auto;
-  }
 }
 </style>

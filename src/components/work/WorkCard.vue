@@ -123,7 +123,7 @@ const formatDate = (dateStr: string) => {
 }
 
 [data-theme='dark'] .cover-index {
-  background: rgba(15, 15, 26, 0.85);
+  background: rgba(0, 0, 0, 0.85);
   color: var(--text-primary);
 }
 

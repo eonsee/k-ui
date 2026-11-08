@@ -694,7 +694,7 @@ const setWorkCategory = (category: string) => {
 }
 
 [data-theme='dark'] .node-dot {
-  box-shadow: 0 0 0 3px rgba(15, 15, 26, 0.9), 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .node-glow {
@@ -793,7 +793,7 @@ const setWorkCategory = (category: string) => {
 }
 
 [data-theme='dark'] .mindmap-node.mock .node-dot {
-  box-shadow: 0 0 0 2px rgba(15, 15, 26, 0.9);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.9);
 }
 
 .mindmap-node.mock.hovered .node-dot {

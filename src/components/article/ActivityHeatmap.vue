@@ -117,7 +117,7 @@ const getContrastColor = (hex: string): string => {
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.5 ? '#1e293b' : '#ffffff'
+  return luminance > 0.5 ? '#111111' : '#ffffff'
 }
 
 // 获取当前节气的颜色配置
@@ -436,7 +436,7 @@ onMounted(() => {
 [data-theme='dark'] .autumn-level-0,
 [data-theme='dark'] .winter-level-0,
 [data-theme='dark'] .level-0 {
-  background: #1e293b;
+  background: #141414;
 }
 
 /* 春季 - 嫩绿色 */
