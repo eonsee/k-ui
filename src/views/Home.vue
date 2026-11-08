@@ -1,11 +1,16 @@
 <template>
   <div class="home-page">
     <!-- Hero Section -->
-    <section class="hero-section">
+    <section ref="heroRef" class="hero-section">
       <div class="hero-bg">
         <div class="hero-gradient"></div>
-        <div class="hero-bubbles">
-          <div v-for="i in 30" :key="i" class="bubble" :style="getBubbleStyle(i)"></div>
+        <div class="hero-bubbles" :style="{ '--hero-rise': heroRise }">
+          <div
+            v-for="(bubble, index) in bubbleStyles"
+            :key="index"
+            class="bubble"
+            :style="bubble"
+          ></div>
         </div>
       </div>
       <div class="container hero-content">
@@ -414,14 +419,49 @@ const worksSectionStyle = computed(() => {
   }
 })
 
+const heroRef = ref<HTMLElement | null>(null)
+const heroRise = ref('105vh')
+let heroResizeObserver: ResizeObserver | null = null
+
+// 让气泡从底部升出整个 hero：移动端 hero 可能高于 100vh
+onMounted(() => {
+  const el = heroRef.value
+  if (!el || typeof ResizeObserver === 'undefined') return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  let measured = 0
+  heroResizeObserver = new ResizeObserver(() => {
+    const height = Math.ceil(el.offsetHeight + 40)
+    // 高度变化不大时不重设，避免动画中途跳动
+    if (Math.abs(height - measured) < 24) return
+    measured = height
+    heroRise.value = `${height}px`
+  })
+  heroResizeObserver.observe(el)
+})
+
+onUnmounted(() => {
+  heroResizeObserver?.disconnect()
+  heroResizeObserver = null
+})
+
+// 固定种子生成气泡参数：只在 setup 执行一次，
+// 避免打字机/接口数据更新触发重渲染时把气泡随机重置
+const seededRandom = (seed: number) => {
+  const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453
+  return value - Math.floor(value)
+}
+
 const getBubbleStyle = (index: number) => {
+  const rand = (offset: number) => seededRandom(index * 10 + offset)
+
   // 小气泡居多，偶尔出现大气泡，更接近真实分布
-  const size = Math.pow(Math.random(), 2) * 22 + 6
-  const left = Math.random() * 100
-  const delay = Math.random() * 5
-  const duration = Math.random() * 10 + 12
-  const drift = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 24 + 8)
-  const opacity = Math.random() * 0.3 + 0.35
+  const size = Math.pow(rand(1), 2) * 22 + 6
+  const left = rand(2) * 94 + 3
+  const delay = rand(3) * 5
+  const duration = rand(4) * 10 + 12
+  const drift = (rand(5) > 0.5 ? 1 : -1) * (rand(6) * 24 + 8)
+  const opacity = rand(7) * 0.3 + 0.35
 
   return {
     width: `${size}px`,
@@ -433,6 +473,8 @@ const getBubbleStyle = (index: number) => {
     '--bubble-opacity': opacity.toFixed(2),
   }
 }
+
+const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(index))
 </script>
 
 <style scoped>
@@ -464,6 +506,7 @@ const getBubbleStyle = (index: number) => {
 }
 
 .hero-bubbles {
+  --hero-rise: 105vh;
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -510,26 +553,29 @@ const getBubbleStyle = (index: number) => {
     opacity: var(--bubble-opacity, 0.4);
   }
   20% {
-    transform: translate3d(calc(var(--drift, 16px) * 0.45), -22vh, 0) scale(1.02);
-    border-radius: 49% 51% 50% 50% / 51% 49% 51% 49%;
+    transform: translate3d(calc(var(--drift, 16px) * 0.45), calc(var(--hero-rise, 105vh) * -0.21), 0) scale(1.02);
   }
   36% {
-    transform: translate3d(calc(var(--drift, 16px) * -0.3), -38vh, 0) scale(0.97);
-    border-radius: 51% 49% 49% 51% / 49% 51% 49% 51%;
+    transform: translate3d(calc(var(--drift, 16px) * -0.3), calc(var(--hero-rise, 105vh) * -0.36), 0) scale(0.97);
   }
   52% {
-    transform: translate3d(var(--drift, 16px), -54vh, 0) scale(1.04);
-    border-radius: 50% 50% 51% 49% / 50% 50% 49% 51%;
+    transform: translate3d(var(--drift, 16px), calc(var(--hero-rise, 105vh) * -0.51), 0) scale(1.04);
   }
   68% {
-    transform: translate3d(calc(var(--drift, 16px) * 0.35), -70vh, 0) scale(0.99);
-    border-radius: 49% 51% 50% 50% / 51% 49% 50% 50%;
+    transform: translate3d(calc(var(--drift, 16px) * 0.35), calc(var(--hero-rise, 105vh) * -0.67), 0) scale(0.99);
   }
   84% {
     opacity: var(--bubble-opacity, 0.4);
   }
   100% {
-    transform: translate3d(calc(var(--drift, 16px) * -0.45), -105vh, 0) scale(1.08);
+    transform: translate3d(calc(var(--drift, 16px) * -0.45), calc(var(--hero-rise, 105vh) * -1), 0) scale(1.08);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble {
+    animation: none;
     opacity: 0;
   }
 }
