@@ -5,6 +5,12 @@
       <!-- Article Header -->
       <header class="article-header">
         <div class="container">
+          <div class="article-header-top">
+            <button class="article-back" type="button" @click="goBack">
+              <ArrowLeft :size="16" />
+              返回
+            </button>
+          </div>
           <div class="article-meta">
             <span class="category">{{ article.category }}</span>
             <span class="divider">·</span>
@@ -20,20 +26,32 @@
         </div>
       </header>
 
-      <!-- Article Cover -->
-      <div class="article-cover">
-        <img :src="article.cover" :alt="article.title" />
-      </div>
-
       <!-- Article Content -->
       <div class="article-content-wrapper">
         <div class="container">
           <div class="article-layout">
             <div class="article-main">
               <div class="article-content" v-html="renderedContent"></div>
-              <p class="copyright-text">
-                本站内容均为原创首发，未经许可，不允许转载。
-              </p>
+
+              <!-- 作者信息 + 分享 + 版权声明 -->
+              <div class="article-end">
+                <div class="author-info">
+                  <img :src="myAvatar" :alt="profile.name" class="author-avatar" />
+                  <div class="author-details">
+                    <div class="author-name">{{ profile.name }}</div>
+                    <div class="author-title">{{ profile.title }}</div>
+                  </div>
+                </div>
+
+                <button class="action-btn" @click="shareArticle">
+                  <Share2 :size="16" />
+                  分享
+                </button>
+
+                <p class="copyright-text">
+                  本站内容均为原创首发，未经许可，不允许转载。
+                </p>
+              </div>
             </div>
             <aside class="article-sidebar">
               <ArticleToc :content="article.content" />
@@ -42,71 +60,40 @@
         </div>
       </div>
 
-      <!-- Article Footer -->
-      <footer class="article-footer">
-        <div class="container">
-          <div class="author-info">
-            <img :src="myAvatar" :alt="profile.name" class="author-avatar" />
-            <div class="author-details">
-              <div class="author-name">{{ profile.name }}</div>
-              <div class="author-title">{{ profile.title }}</div>
-            </div>
-          </div>
-
-          <div class="article-actions">
-            <button class="action-btn" @click="shareArticle">
-              <Share2 :size="18" />
-              分享
-            </button>
-          </div>
-        </div>
-      </footer>
     </article>
 
     <!-- Article Navigation -->
     <section class="article-navigation" v-if="prevArticle || nextArticle">
       <div class="container">
-        <div class="nav-cards">
+        <nav class="article-nav" aria-label="文章导航">
           <router-link
             v-if="prevArticle"
             :to="`/article/${prevArticle.id}`"
-            class="nav-card prev"
+            class="article-nav-link prev"
           >
-            <div class="nav-direction">
-              <ChevronLeft :size="20" />
-              <span>上一篇</span>
-            </div>
-            <div class="nav-title">{{ prevArticle.title }}</div>
+            <span class="article-nav-label">
+              <ChevronLeft :size="14" />
+              上一篇
+            </span>
+            <span class="article-nav-title">{{ prevArticle.title }}</span>
           </router-link>
-          <div v-else class="nav-card empty"></div>
+          <span v-else class="article-nav-empty" aria-hidden="true"></span>
+
+          <span class="article-nav-divider" aria-hidden="true"></span>
 
           <router-link
             v-if="nextArticle"
             :to="`/article/${nextArticle.id}`"
-            class="nav-card next"
+            class="article-nav-link next"
           >
-            <div class="nav-direction">
-              <span>下一篇</span>
-              <ChevronRight :size="20" />
-            </div>
-            <div class="nav-title">{{ nextArticle.title }}</div>
+            <span class="article-nav-label">
+              下一篇
+              <ChevronRight :size="14" />
+            </span>
+            <span class="article-nav-title">{{ nextArticle.title }}</span>
           </router-link>
-          <div v-else class="nav-card empty"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Related Articles -->
-    <section class="related-section" v-if="relatedArticles.length > 0">
-      <div class="container">
-        <h2 class="section-title">相关文章</h2>
-        <div class="related-grid">
-          <ArticleCard
-            v-for="relatedArticle in relatedArticles"
-            :key="relatedArticle.id"
-            :article="relatedArticle"
-          />
-        </div>
+          <span v-else class="article-nav-empty" aria-hidden="true"></span>
+        </nav>
       </div>
     </section>
   </div>
@@ -140,20 +127,29 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Share2, FileQuestion, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
 import { useBlogStore } from '@/store'
 import type { Article } from '@/types'
-import ArticleCard from '@/components/article/ArticleCard.vue'
 import ArticleToc from '@/components/article/ArticleToc.vue'
 import AutoReader from '@/components/article/AutoReader.vue'
 import myAvatar from '@/assets/my.jpg'
 
 const route = useRoute()
+const router = useRouter()
 const blogStore = useBlogStore()
+
+// 返回上一页；直接打开链接时回退到文章列表
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/articles')
+  }
+}
 
 // 文章详情：优先调用后端接口，失败时回退到本地 store
 const article = ref<Article | null>(null)
@@ -190,11 +186,6 @@ watch(() => route.params.id, (newId) => {
 })
 
 const profile = computed(() => blogStore.profileData)
-const currentYear = computed(() => new Date().getFullYear())
-const relatedArticles = computed(() => {
-  if (!article.value) return []
-  return blogStore.getRelatedArticles(article.value.id)
-})
 
 const prevNextArticles = computed(() => {
   if (!article.value) return { prev: null, next: null }
@@ -282,9 +273,35 @@ const shareArticle = () => {
 }
 
 .article-header {
-  padding: 48px 0;
+  padding: 24px 0 40px;
   text-align: center;
   background: var(--bg-secondary);
+}
+
+.article-header-top {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.article-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: -10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .article-back:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+  }
 }
 
 .article-meta {
@@ -337,25 +354,8 @@ const shareArticle = () => {
   color: var(--text-secondary);
 }
 
-.article-cover {
-  max-width: 1000px;
-  margin: 0 auto;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-  margin-top: -24px;
-  aspect-ratio: 16 / 9;
-}
-
-.article-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 .article-content-wrapper {
-  padding: 48px 0;
+  padding: 40px 0 56px;
 }
 
 .article-layout {
@@ -366,18 +366,32 @@ const shareArticle = () => {
 
 .article-main {
   max-width: 720px;
+  min-width: 0;
 }
 
 .article-content {
   max-width: 720px;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* 正文结束栏：作者 + 分享 + 版权声明 */
+.article-end {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
 }
 
 .copyright-text {
-  font-size: 0.8125rem;
+  margin: 0 0 0 auto;
+  padding: 8px 12px;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
-  margin-top: 32px;
-  padding: 12px 16px;
-  background: #f8fafc;
+  background: var(--bg-secondary);
   border-radius: var(--radius-md);
 }
 
@@ -476,7 +490,8 @@ const shareArticle = () => {
 .article-content :deep(pre) {
   margin: 24px 0;
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .article-content :deep(blockquote) {
@@ -503,9 +518,15 @@ const shareArticle = () => {
   text-decoration: underline;
 }
 
+/* 正文图片：限制最大高度，避免大图喧宾夺主 */
 .article-content :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 480px;
+  margin: 24px auto;
   border-radius: var(--radius-lg);
-  margin: 24px 0;
+  object-fit: contain;
 }
 
 .article-sidebar {
@@ -514,53 +535,39 @@ const shareArticle = () => {
   height: fit-content;
 }
 
-.article-footer {
-  padding: 32px 0;
-  border-top: 1px solid var(--border-color);
-}
-
-.article-footer .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .author-info {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .author-avatar {
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .author-name {
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .author-title {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
-}
-
-.article-actions {
-  display: flex;
-  gap: 12px;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 6px;
+  padding: 8px 14px;
   background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  font-size: 0.875rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
   transition: all var(--transition-fast);
@@ -571,76 +578,70 @@ const shareArticle = () => {
   color: var(--text-primary);
 }
 
-/* Article Navigation */
+/* Article Navigation：紧凑的上/下一篇 */
 .article-navigation {
-  padding: 48px 0;
-  background: var(--bg-primary);
+  padding: 24px 0;
+  border-top: 1px solid var(--border-color);
 }
 
-.nav-cards {
+.article-nav {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1px 1fr;
   gap: 24px;
 }
 
-.nav-card {
+.article-nav-link {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 24px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 4px;
+  border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.nav-card:hover {
-  background: var(--bg-tertiary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.nav-card.empty {
-  background: transparent;
-}
-
-.nav-direction {
-  display: flex;
+.article-nav-label {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
+  transition: color 0.2s ease;
 }
 
-.nav-title {
-  font-size: 1rem;
+.article-nav-title {
+  font-size: 0.9375rem;
   font-weight: 500;
+  line-height: 1.5;
   color: var(--text-primary);
-  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
-.nav-card.next {
+.article-nav-divider {
+  width: 1px;
+  background: var(--border-color);
+}
+
+.article-nav-link.next {
+  align-items: flex-end;
   text-align: right;
 }
 
-.nav-card.next .nav-direction {
-  justify-content: flex-end;
+@media (hover: hover) and (pointer: fine) {
+  .article-nav-link:hover .article-nav-label,
+  .article-nav-link:hover .article-nav-title {
+    color: var(--primary-color);
+  }
 }
 
-.related-section {
-  padding: 64px 0;
-  background: var(--bg-secondary);
-}
-
-.section-title {
-  font-size: 1.75rem;
-  margin-bottom: 32px;
-}
-
-.related-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+@media (hover: none) {
+  .article-nav-link:active .article-nav-title {
+    color: var(--primary-color);
+  }
 }
 
 .not-found {
@@ -694,14 +695,6 @@ const shareArticle = () => {
   .article-sidebar {
     display: none;
   }
-
-  .related-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .nav-cards {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 768px) {
@@ -709,13 +702,37 @@ const shareArticle = () => {
     font-size: 1.75rem;
   }
 
-  .article-footer .container {
+  .article-end {
+    align-items: flex-start;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
-  .related-grid {
+  .copyright-text {
+    margin-left: 0;
+  }
+
+  .article-navigation {
+    padding: 20px 0;
+  }
+
+  .article-nav {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .article-nav-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .article-nav-link.next {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .article-nav-title {
+    white-space: normal;
   }
 }
 </style>
