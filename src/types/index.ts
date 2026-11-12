@@ -42,6 +42,8 @@ export interface Profile {
     weibo?: string
     gitee?: string
     juejin?: string
+    xiaohongshu?: string
+    douyin?: string
   }
   skills: {
     name: string

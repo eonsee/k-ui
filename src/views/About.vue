@@ -13,136 +13,189 @@
     </transition>
 
     <div class="container page-content">
-      <!-- Profile Section -->
-      <section class="profile-section">
-        <div class="profile-card">
-          <div class="profile-avatar-wrapper">
-            <img :src="myAvatar" :alt="profile.name" class="profile-avatar" />
-            <div class="avatar-glow"></div>
-          </div>
-          <div class="profile-info">
-            <h1 class="profile-name gradient-text">{{ profile.name }}</h1>
-            <p class="profile-title">{{ profile.title }}</p>
-            <p class="profile-bio">{{ profile.bio }}</p>
-            <div class="profile-location">
-              <MapPin :size="16" />
-              {{ profile.location }}
-            </div>
-            <div class="social-links">
-              <a v-if="profile.social.github" :href="profile.social.github" target="_blank" class="social-link">
-                <Github :size="20" />
-              </a>
-              <a v-if="profile.social.twitter" :href="profile.social.twitter" target="_blank" class="social-link">
-                <Twitter :size="20" />
-              </a>
-              <a v-if="profile.social.linkedin" :href="profile.social.linkedin" target="_blank" class="social-link">
-                <Linkedin :size="20" />
-              </a>
-              <a v-if="profile.social.weibo" :href="profile.social.weibo" target="_blank" class="social-link">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M10.098 20c-4.612 0-8.59-2.507-8.59-5.5 0-1.56.932-3.36 2.53-5.076 2.133-2.267 4.618-3.293 5.548-2.293.425.45.507 1.19.243 2.13-.14.49.36.34.36.34 1.44-.51 2.75-.54 3.23.24.25.41.25.95-.02 1.55-.14.32.02.42.28.36.93-.19 1.65-.12 2.04.37.43.54.36 1.38-.17 2.38-.9 1.7-3.12 4.89-5.51 4.89zm-.17-10.19c-2.18.07-3.94 1.62-3.94 3.46 0 1.84 1.76 3.3 3.94 3.23 2.18-.07 3.94-1.62 3.94-3.46 0-1.84-1.76-3.3-3.94-3.23z"/>
-                </svg>
-              </a>
-              <a v-if="profile.social.gitee" :href="profile.social.gitee" target="_blank" class="social-link" title="Gitee">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" fill-rule="evenodd">
-                  <path d="M11.984 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.016 0zM7.527 4.5c-.55 0-1 .45-1 1s.45 1 1 1h3.5c.55 0 1 .45 1 1s-.45 1-1 1h-3.5c-.55 0-1 .45-1 1s.45 1 1 1h3.5c.55 0 1 .45 1 1s-.45 1-1 1h-3.5c-.55 0-1 .45-1 1s.45 1 1 1h3.5c.55 0 1 .45 1 1s-.45 1-1 1h-3.5c-.55 0-1 .45-1 1s.45 1 1 1h7.5c2.21 0 4-1.79 4-4s-1.79-4-4-4h-7.5z"/>
-                </svg>
-              </a>
-              <a v-if="profile.social.juejin" :href="profile.social.juejin" target="_blank" class="social-link" title="掘金">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M12 14.316l7.454-5.88-2.022-1.625L12 10.995l-5.432-4.184-2.022 1.625L12 14.316zm0-7.47l7.454-5.88-2.022-1.626L12 3.527l-5.432-4.187-2.022 1.626L12 6.846zm0 14.94l-7.454-5.88 2.022-1.626L12 19.995l5.432-4.215 2.022 1.626L12 21.856z"/>
-                </svg>
-              </a>
-              <a :href="`mailto:${profile.email}`" class="social-link">
-                <Mail :size="20" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      <div class="about-grid">
+        <!-- Sidebar -->
+        <aside class="about-sidebar">
+          <section class="profile-section">
+            <div class="profile-card">
+              <div class="profile-avatar-wrapper">
+                <img :src="myAvatar" :alt="profile.name" class="profile-avatar" />
+                <div class="avatar-glow"></div>
+              </div>
+              <div class="profile-info">
+                <h2 class="profile-name">{{ profile.name }}</h2>
+                <p class="profile-title">{{ profile.title }}</p>
 
-      <!-- Skills Section -->
-      <section class="skills-section">
-        <h2 class="section-title">技能专长</h2>
-        <div class="skills-card">
-          <div class="skill-items">
-            <a
-              v-for="item in profile.skills"
-              :key="item.name"
-              :href="item.url || '#'"
-              :target="item.url ? '_blank' : undefined"
-              class="skill-tag"
-              :title="item.name"
-            >
-              <img
-                :src="`https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${item.icon}/${item.icon}-original.svg`"
-                :alt="item.name"
-                class="skill-icon"
-                @error="onIconError"
-              />
-              <span class="skill-tag-name">{{ item.name }}</span>
-            </a>
-          </div>
-        </div>
-      </section>
+                <div class="profile-meta">
+                  <span class="profile-location">
+                    <MapPin :size="15" />
+                    {{ profile.location }}
+                  </span>
+                  <a :href="`mailto:${profile.email}`" class="profile-email">
+                    <Mail :size="15" />
+                    {{ profile.email }}
+                  </a>
+                </div>
 
-      <!-- Contact Section -->
-      <section class="contact-section">
-        <h2 class="section-title">联系我</h2>
-        <div class="contact-card">
-          <div class="contact-info">
-            <div class="contact-item">
-              <Mail :size="24" />
-              <div>
-                <div class="contact-label">邮箱</div>
-                <a :href="`mailto:${profile.email}`" class="contact-value">{{ profile.email }}</a>
+                <div class="social-links">
+                  <a v-if="profile.social.github" :href="profile.social.github" target="_blank" class="social-link" title="GitHub">
+                    <Github :size="18" />
+                  </a>
+                  <a
+                    :href="profile.social.xiaohongshu || 'https://www.xiaohongshu.com/'"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="social-link"
+                    title="小红书"
+                    aria-label="小红书"
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                      <path d="M22.405 9.879c.002.016.01.02.07.019h.725a.797.797 0 0 0 .78-.972.794.794 0 0 0-.884-.618.795.795 0 0 0-.692.794c0 .101-.002.666.001.777zm-11.509 4.808c-.203.001-1.353.004-1.685.003a2.528 2.528 0 0 1-.766-.126.025.025 0 0 0-.03.014L7.7 16.127a.025.025 0 0 0 .01.032c.111.06.336.124.495.124.66.01 1.32.002 1.981 0 .01 0 .02-.006.023-.015l.712-1.545a.025.025 0 0 0-.024-.036zM.477 9.91c-.071 0-.076.002-.076.01a.834.834 0 0 0-.01.08c-.027.397-.038.495-.234 3.06-.012.24-.034.389-.135.607-.026.057-.033.042.003.112.046.092.681 1.523.787 1.74.008.015.011.02.017.02.008 0 .033-.026.047-.044.147-.187.268-.391.371-.606.306-.635.44-1.325.486-1.706.014-.11.021-.22.03-.33l.204-2.616.022-.293c.003-.029 0-.033-.03-.034zm7.203 3.757a1.427 1.427 0 0 1-.135-.607c-.004-.084-.031-.39-.235-3.06a.443.443 0 0 0-.01-.082c-.004-.011-.052-.008-.076-.008h-1.48c-.03.001-.034.005-.03.034l.021.293c.076.982.153 1.964.233 2.946.05.4.186 1.085.487 1.706.103.215.223.419.37.606.015.018.037.051.048.049.02-.003.742-1.642.804-1.765.036-.07.03-.055.003-.112zm3.861-.913h-.872a.126.126 0 0 1-.116-.178l1.178-2.625a.025.025 0 0 0-.023-.035l-1.318-.003a.148.148 0 0 1-.135-.21l.876-1.954a.025.025 0 0 0-.023-.035h-1.56c-.01 0-.02.006-.024.015l-.926 2.068c-.085.169-.314.634-.399.938a.534.534 0 0 0-.02.191.46.46 0 0 0 .23.378.981.981 0 0 0 .46.119h.59c.041 0-.688 1.482-.834 1.972a.53.53 0 0 0-.023.172.465.465 0 0 0 .23.398c.15.092.342.12.475.12l1.66-.001c.01 0 .02-.006.023-.015l.575-1.28a.025.025 0 0 0-.024-.035zm-6.93-4.937H3.1a.032.032 0 0 0-.034.033c0 1.048-.01 2.795-.01 6.829 0 .288-.269.262-.28.262h-.74c-.04.001-.044.004-.04.047.001.037.465 1.064.555 1.263.01.02.03.033.051.033.157.003.767.009.938-.014.153-.02.3-.06.438-.132.3-.156.49-.419.595-.765.052-.172.075-.353.075-.533.002-2.33 0-4.66-.007-6.991a.032.032 0 0 0-.032-.032zm11.784 6.896c0-.014-.01-.021-.024-.022h-1.465c-.048-.001-.049-.002-.05-.049v-4.66c0-.072-.005-.07.07-.07h.863c.08 0 .075.004.075-.074V8.393c0-.082.006-.076-.08-.076h-3.5c-.064 0-.075-.006-.075.073v1.445c0 .083-.006.077.08.077h.854c.075 0 .07-.004.07.07v4.624c0 .095.008.084-.085.084-.37 0-1.11-.002-1.304 0-.048.001-.06.03-.06.03l-.697 1.519s-.014.025-.008.036c.006.01.013.008.058.008 1.748.003 3.495.002 5.243.002.03-.001.034-.006.035-.033v-1.539zm4.177-3.43c0 .013-.007.023-.02.024-.346.006-.692.004-1.037.004-.014-.002-.022-.01-.022-.024-.005-.434-.007-.869-.01-1.303 0-.072-.006-.071.07-.07l.733-.003c.041 0 .081.002.12.015.093.025.16.107.165.204.006.431.002 1.153.001 1.153zm2.67.244a1.953 1.953 0 0 0-.883-.222h-.18c-.04-.001-.04-.003-.042-.04V10.21c0-.132-.007-.263-.025-.394a1.823 1.823 0 0 0-.153-.53 1.533 1.533 0 0 0-.677-.71 2.167 2.167 0 0 0-1-.258c-.153-.003-.567 0-.72 0-.07 0-.068.004-.068-.065V7.76c0-.031-.01-.041-.046-.039H17.93s-.016 0-.023.007c-.006.006-.008.012-.008.023v.546c-.008.036-.057.015-.082.022h-.95c-.022.002-.028.008-.03.032v1.481c0 .09-.004.082.082.082h.913c.082 0 .072.128.072.128V11.19s.003.117-.06.117h-1.482c-.068 0-.06.082-.06.082v1.445s-.01.068.064.068h1.457c.082 0 .076-.006.076.079v3.225c0 .088-.007.081.082.081h1.43c.09 0 .082.007.082-.08v-3.27c0-.029.006-.035.033-.035l2.323-.003c.098 0 .191.02.28.061a.46.46 0 0 1 .274.407c.008.395.003.79.003 1.185 0 .259-.107.367-.33.367h-1.218c-.023.002-.029.008-.028.033.184.437.374.871.57 1.303a.045.045 0 0 0 .04.026c.17.005.34.002.51.003.15-.002.517.004.666-.01a2.03 2.03 0 0 0 .408-.075c.59-.18.975-.698.976-1.313v-1.981c0-.128-.01-.254-.034-.38 0 .078-.029-.641-.724-.998z"/>
+                    </svg>
+                  </a>
+                  <a
+                    :href="profile.social.douyin || 'https://www.douyin.com/'"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="social-link"
+                    title="抖音"
+                    aria-label="抖音"
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                      <path d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"/>
+                    </svg>
+                  </a>
+                  <a v-if="profile.social.twitter" :href="profile.social.twitter" target="_blank" class="social-link" title="X">
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+                      <path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/>
+                    </svg>
+                  </a>
+                  <a v-if="profile.social.linkedin" :href="profile.social.linkedin" target="_blank" class="social-link">
+                    <Linkedin :size="18" />
+                  </a>
+                  <a v-if="profile.social.weibo" :href="profile.social.weibo" target="_blank" class="social-link">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                      <path d="M10.098 20c-4.612 0-8.59-2.507-8.59-5.5 0-1.56.932-3.36 2.53-5.076 2.133-2.267 4.618-3.293 5.548-2.293.425.45.507 1.19.243 2.13-.14.49.36.34.36.34 1.44-.51 2.75-.54 3.23.24.25.41.25.95-.02 1.55-.14.32.02.42.28.36.93-.19 1.65-.12 2.04.37.43.54.36 1.38-.17 2.38-.9 1.7-3.12 4.89-5.51 4.89zm-.17-10.19c-2.18.07-3.94 1.62-3.94 3.46 0 1.84 1.76 3.3 3.94 3.23 2.18-.07 3.94-1.62 3.94-3.46 0-1.84-1.76-3.3-3.94-3.23z"/>
+                    </svg>
+                  </a>
+                  <a v-if="profile.social.gitee" :href="profile.social.gitee" target="_blank" class="social-link" title="Gitee">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                      <path d="M11.984 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.016 0zm6.09 5.333c.328 0 .593.266.592.593v1.482a.594.594 0 0 1-.593.592H9.777c-.982 0-1.778.796-1.778 1.778v5.63c0 .327.266.592.593.592h5.63c.982 0 1.778-.796 1.778-1.778v-.296a.593.593 0 0 0-.592-.593h-4.15a.592.592 0 0 1-.592-.592v-1.482a.593.593 0 0 1 .593-.592h6.815c.327 0 .593.265.593.592v3.408a4 4 0 0 1-4 4H5.926a.593.593 0 0 1-.593-.593V9.778a4.444 4.444 0 0 1 4.445-4.444h8.296Z"/>
+                    </svg>
+                  </a>
+                  <a v-if="profile.social.juejin" :href="profile.social.juejin" target="_blank" class="social-link" title="掘金">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                      <path d="M12 14.316l7.454-5.88-2.022-1.625L12 10.995l-5.432-4.184-2.022 1.625L12 14.316zm0-7.47l7.454-5.88-2.022-1.626L12 3.527l-5.432-4.187-2.022 1.626L12 6.846zm0 14.94l-7.454-5.88 2.022-1.626L12 19.995l5.432-4.215 2.022 1.626L12 21.856z"/>
+                    </svg>
+                  </a>
+                  <a :href="`mailto:${profile.email}`" class="social-link">
+                    <Mail :size="18" />
+                  </a>
+                </div>
               </div>
             </div>
-            <div class="contact-item">
-              <MapPin :size="24" />
-              <div>
-                <div class="contact-label">位置</div>
-                <div class="contact-value">{{ profile.location }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="contact-cta">
-            <p>有项目想要合作？或者只是想打个招呼？</p>
-            <a :href="`mailto:${profile.email}`" class="cta-btn">
-              <Send :size="18" />
-              发送邮件
-            </a>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <!-- Guangxi Travel Section -->
-      <section class="travel-section">
-        <div class="travel-header">
-          <h2 class="section-title">广西风光</h2>
-          <button class="recommend-btn" @click="showRecommendModal = true">
-            <Plus :size="16" />
-            推荐景点
-          </button>
-        </div>
-        <div class="travel-marquee">
-          <div class="marquee-track" :class="{ paused: isPaused }">
+          <!-- 广西风光（侧边栏）：从头像卡片掉落，展示后被吸进推荐按钮 -->
+          <section class="travel-section">
             <div
-              v-for="(spot, i) in [...guangxiSpots, ...guangxiSpots]"
-              :key="i"
-              class="travel-card"
-              @mouseenter="onCardHover(spot)"
-              @mouseleave="onCardLeave"
+              class="travel-machine"
+              @mouseenter="onTravelEnter"
+              @mouseleave="onTravelLeave"
             >
-              <img :src="spot.image" :alt="spot.name" class="travel-img" />
-              <div class="travel-overlay">
-                <h4 class="travel-name">{{ spot.name }}</h4>
-                <p class="travel-desc">{{ spot.desc }}</p>
+              <div class="travel-stage">
+                <Transition name="travel-card">
+                  <div :key="activeTravelSpot.name" class="machine-card" @click="advanceTravel">
+                    <img :src="activeTravelSpot.image" :alt="activeTravelSpot.name" class="machine-img" />
+                    <div class="machine-overlay">
+                      <h4 class="machine-name">{{ activeTravelSpot.name }}</h4>
+                      <p class="machine-desc">{{ activeTravelSpot.desc }}</p>
+                    </div>
+                  </div>
+                </Transition>
               </div>
             </div>
-          </div>
+
+            <div class="travel-header" :class="{ sucking: isSucking }">
+              <span class="inhale-ring" aria-hidden="true"></span>
+              <button class="recommend-btn" type="button" @click="showRecommendModal = true">
+                <Plus :size="14" />
+                推荐景点
+              </button>
+            </div>
+          </section>
+        </aside>
+
+        <!-- Main content -->
+        <div class="about-main">
+          <section class="bio-section">
+            <p class="about-bio">{{ profile.bio }}</p>
+          </section>
+
+          <section class="timeline-section" v-if="growthTimeline.length > 0">
+            <h2 class="section-title">成长经历</h2>
+            <div class="growth-axis">
+              <button
+                v-for="(item, index) in growthTimeline"
+                :key="`${item.year}-${index}`"
+                type="button"
+                class="growth-node"
+                :class="{
+                  active: activeGrowthIndex === index,
+                  current: item.isCurrent,
+                  'edge-start': index === 0,
+                  'edge-end': index === growthTimeline.length - 1
+                }"
+                :style="{ '--dot-color': item.color }"
+                @mouseenter="setActiveGrowth(index)"
+                @mouseleave="clearActiveGrowth"
+                @focus="setActiveGrowth(index)"
+                @blur="clearActiveGrowth"
+                @click="setActiveGrowth(index)"
+              >
+                <span class="node-dot"></span>
+                <span class="node-year">{{ item.year }}</span>
+                <span class="node-label">{{ item.label }}</span>
+
+                <span class="node-bubble" role="tooltip">
+                  <span class="bubble-head">
+                    <span class="bubble-year">{{ item.year }}</span>
+                    <span class="bubble-label">{{ item.label }}</span>
+                  </span>
+                  <span class="bubble-desc">{{ item.desc }}</span>
+                  <span v-if="item.achievements.length" class="bubble-tags">
+                    <span v-for="a in item.achievements" :key="a" class="bubble-tag">{{ a }}</span>
+                  </span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section class="skills-section">
+            <h2 class="section-title">技能专长</h2>
+            <div class="skills-card">
+              <div class="skill-items">
+                <a
+                  v-for="item in profile.skills"
+                  :key="item.name"
+                  :href="item.url || '#'"
+                  :target="item.url ? '_blank' : undefined"
+                  class="skill-tag"
+                  :title="item.name"
+                >
+                  <img
+                    :src="`https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${item.icon}/${item.icon}-original.svg`"
+                    :alt="item.name"
+                    class="skill-icon"
+                    @error="onIconError"
+                  />
+                  <span class="skill-tag-name">{{ item.name }}</span>
+                </a>
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </div>
 
     <!-- Recommend Modal -->
@@ -181,19 +234,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import { MapPin, Github, Twitter, Linkedin, Mail, Send, Plus, Info } from 'lucide-vue-next'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { MapPin, Github, Linkedin, Mail, Plus, Info } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
 import myAvatar from '@/assets/my.jpg'
 
 const blogStore = useBlogStore()
 const profile = computed(() => blogStore.profileData)
 
+// 成长轨迹：与作品页共用后端数据
+const growthTimeline = computed(() => {
+  const data = blogStore.growthTimelineData
+  if (!data || data.length === 0) return []
+  return [...data]
+    .sort((a, b) => a.year - b.year)
+    .map((vo) => ({
+      year: vo.year,
+      label: vo.label || '',
+      desc: vo.description || '',
+      achievements: vo.achievement ? vo.achievement.split(/[,，、]/).filter(Boolean) : [],
+      color: vo.color || '#06b6d4',
+      isCurrent: vo.isCurrent === 1,
+    }))
+})
+
 onMounted(() => {
   blogStore.fetchProfile()
   blogStore.fetchSkills()
+  blogStore.fetchGrowthTimeline()
 })
-const isPaused = ref(false)
 const hoveredSpot = ref<{ name: string; desc: string; image: string } | null>(null)
 const showRecommendModal = ref(false)
 const recommendForm = ref({
@@ -206,19 +275,82 @@ const recommendForm = ref({
 let hoverTimer: ReturnType<typeof setTimeout> | null = null
 
 const onCardHover = (spot: { name: string; desc: string; image: string }) => {
-  isPaused.value = true
   hoverTimer = setTimeout(() => {
     hoveredSpot.value = spot
   }, 300)
 }
 
 const onCardLeave = () => {
-  isPaused.value = false
   hoveredSpot.value = null
   if (hoverTimer) {
     clearTimeout(hoverTimer)
     hoverTimer = null
   }
+}
+
+// 景点：每 7 秒从头像卡片掉落一张，展示后被缓慢吸进「推荐景点」按钮
+const travelSpots = computed(() => guangxiSpots.slice(0, 6))
+const activeTravelIndex = ref(0)
+const activeTravelSpot = computed(() => travelSpots.value[activeTravelIndex.value])
+const isSucking = ref(false)
+let travelTimer: ReturnType<typeof setInterval> | null = null
+let suckTimer: ReturnType<typeof setTimeout> | null = null
+
+const triggerSuck = () => {
+  if (suckTimer) clearTimeout(suckTimer)
+  isSucking.value = false
+  requestAnimationFrame(() => {
+    isSucking.value = true
+  })
+  suckTimer = setTimeout(() => {
+    isSucking.value = false
+  }, 2200)
+}
+
+const advanceTravel = () => {
+  triggerSuck()
+  activeTravelIndex.value = (activeTravelIndex.value + 1) % travelSpots.value.length
+}
+
+const stopTravelRotation = () => {
+  if (travelTimer) {
+    clearInterval(travelTimer)
+    travelTimer = null
+  }
+}
+
+const startTravelRotation = () => {
+  stopTravelRotation()
+  travelTimer = setInterval(advanceTravel, 7000)
+}
+
+const onTravelEnter = () => {
+  stopTravelRotation()
+  onCardHover(activeTravelSpot.value)
+}
+
+const onTravelLeave = () => {
+  startTravelRotation()
+  onCardLeave()
+}
+
+onMounted(() => {
+  startTravelRotation()
+})
+
+onUnmounted(() => {
+  stopTravelRotation()
+  if (suckTimer) clearTimeout(suckTimer)
+  if (hoverTimer) clearTimeout(hoverTimer)
+})
+
+// 横向时间线：鼠标悬停/点击的节点，气泡显示在节点上方
+const activeGrowthIndex = ref(-1)
+const setActiveGrowth = (index: number) => {
+  activeGrowthIndex.value = index
+}
+const clearActiveGrowth = () => {
+  activeGrowthIndex.value = -1
 }
 
 const submitRecommend = () => {
@@ -261,9 +393,8 @@ const guangxiSpots = [
 <style scoped>
 .about-page {
   position: relative;
-  padding: 48px 0 80px;
+  padding: 40px 0 80px;
   min-height: calc(100vh - 64px);
-  overflow: hidden;
 }
 
 /* Dynamic Background */
@@ -325,15 +456,62 @@ const guangxiSpots = [
   z-index: 1;
 }
 
+/* Two-column layout */
+.about-grid {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.about-sidebar {
+  align-self: start;
+}
+
+.about-main {
+  min-width: 0;
+}
+
+.bio-section {
+  margin-bottom: 36px;
+}
+
+.about-bio {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  padding-bottom: 8px;
+  font-family: 'STXingkai', '华文行楷', 'STKaiti', 'KaiTi', '楷体', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  transition: color 0.4s ease;
+}
+
+.about-bio::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  left: 0;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--primary-color);
+  opacity: 0.2;
+  transform: rotate(-1deg);
+}
+
 /* When background is active, make cards more opaque */
 .about-page.has-bg .profile-card,
-.about-page.has-bg .skills-card,
-.about-page.has-bg .contact-card {
+.about-page.has-bg .skills-card {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
 }
 
-.about-page.has-bg .section-title {
+.about-page.has-bg .section-title,
+.about-page.has-bg .about-bio {
   color: white;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
 }
@@ -342,112 +520,121 @@ const guangxiSpots = [
   background: rgba(255, 255, 255, 0.85);
 }
 
-.about-page.has-bg .travel-header .section-title {
-  color: white;
-}
-
-/* Profile Section */
+/* Profile sidebar card */
 .profile-section {
-  margin-bottom: 64px;
+  margin: 0;
 }
 
 .profile-card {
-  display: flex;
-  gap: 48px;
-  padding: 48px;
+  position: relative;
+  z-index: 2;
+  padding: 28px 20px;
   background: var(--bg-secondary);
   border-radius: var(--radius-xl);
-  align-items: center;
+  text-align: center;
   transition: background 0.4s ease, backdrop-filter 0.4s ease;
 }
 
 .profile-avatar-wrapper {
   position: relative;
-  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 16px;
 }
 
 .profile-avatar {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  object-fit: cover;
   position: relative;
   z-index: 1;
+  display: block;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .avatar-glow {
   position: absolute;
-  inset: -10px;
+  inset: -8px;
   border-radius: 50%;
   background: var(--primary-gradient);
   opacity: 0.2;
-  filter: blur(20px);
-}
-
-.profile-info {
-  flex: 1;
+  filter: blur(18px);
 }
 
 .profile-name {
-  font-size: 2.5rem;
+  margin-bottom: 4px;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  line-height: 1.2;
+  color: var(--text-primary);
 }
 
 .profile-title {
-  font-size: 1.125rem;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-bottom: 16px;
 }
 
-.profile-bio {
-  font-size: 1rem;
-  color: var(--text-tertiary);
-  line-height: 1.8;
-  margin-bottom: 16px;
-}
-
-.profile-location {
+.profile-meta {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
+  margin-bottom: 18px;
+}
+
+.profile-location,
+.profile-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
-  font-size: 0.9375rem;
-  margin-bottom: 24px;
+}
+
+.profile-email {
+  transition: color var(--transition-fast);
+}
+
+.profile-email:hover {
+  color: var(--primary-color);
 }
 
 .social-links {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }
 
 .social-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: var(--bg-primary);
-  border-radius: var(--radius-lg);
   color: var(--text-secondary);
-  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .social-link:hover {
-  background: var(--primary-gradient);
-  color: white;
+  background: var(--primary-color);
+  color: #fff;
   transform: translateY(-2px);
 }
 
 /* Skills Section */
 .skills-section {
-  margin-bottom: 64px;
+  margin-bottom: 40px;
 }
 
 .section-title {
-  font-size: 1.75rem;
+  font-size: 1.0625rem;
   font-weight: 600;
-  margin-bottom: 32px;
+  margin-bottom: 14px;
   transition: color 0.4s ease;
 }
 
@@ -496,197 +683,367 @@ const guangxiSpots = [
   white-space: nowrap;
 }
 
-/* Contact Section */
-.contact-section {
-  margin-bottom: 64px;
+/* Growth timeline (horizontal) */
+.timeline-section {
+  margin-bottom: 40px;
 }
 
-.contact-card {
-  padding: 48px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-xl);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  transition: background 0.4s ease, backdrop-filter 0.4s ease;
-}
-
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.contact-item {
+.growth-axis {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.contact-item svg {
-  color: var(--primary-color);
-  margin-top: 2px;
+.growth-axis::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 6%;
+  right: 6%;
+  height: 2px;
+  background: var(--border-color);
 }
 
-.contact-label {
-  font-size: 0.8125rem;
+.growth-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.growth-node.active {
+  z-index: 40;
+}
+
+.node-dot {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  border: 2px solid var(--dot-color, var(--primary-color));
+  border-radius: 50%;
+  background: var(--bg-primary);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.growth-node.active .node-dot {
+  background: var(--dot-color, var(--primary-color));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot-color, var(--primary-color)) 18%, transparent);
+  transform: scale(1.1);
+}
+
+.node-year {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
   color: var(--text-tertiary);
+}
+
+.node-label {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.growth-node.active .node-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* 悬停气泡：显示在节点上方 */
+.node-bubble {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  z-index: 30;
+  width: 240px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.growth-node.active .node-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.node-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* 首尾节点靠边对齐，防止气泡溢出 */
+.growth-node.edge-start .node-bubble {
+  left: 0;
+  transform: translateY(6px);
+}
+
+.growth-node.edge-start.active .node-bubble {
+  transform: translateY(0);
+}
+
+.growth-node.edge-start .node-bubble::after {
+  left: 26px;
+  transform: rotate(45deg);
+}
+
+.growth-node.edge-end .node-bubble {
+  right: 0;
+  left: auto;
+  transform: translateY(6px);
+}
+
+.growth-node.edge-end.active .node-bubble {
+  transform: translateY(0);
+}
+
+.growth-node.edge-end .node-bubble::after {
+  right: 26px;
+  left: auto;
+  transform: rotate(45deg);
+}
+
+.bubble-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   margin-bottom: 4px;
 }
 
-.contact-value {
-  font-size: 1rem;
+.bubble-year {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
+.bubble-label {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
-.contact-value:hover {
-  color: var(--primary-color);
-}
-
-.contact-cta {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-left: 48px;
-  border-left: 1px solid var(--border-color);
-}
-
-.contact-cta p {
-  font-size: 1rem;
+.bubble-desc {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.6;
   color: var(--text-secondary);
-  margin-bottom: 24px;
 }
 
-.cta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  background: var(--primary-gradient);
-  color: white;
-  border-radius: var(--radius-lg);
-  font-weight: 500;
-  width: fit-content;
-  transition: all var(--transition-normal);
+.bubble-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
 }
 
-.cta-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
-  color: white;
+.bubble-tag {
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+  font-size: 0.625rem;
+  color: var(--text-tertiary);
 }
 
-/* Guangxi Travel Section */
+.about-page.has-bg .node-year,
+.about-page.has-bg .node-label {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.about-page.has-bg .growth-node.active .node-label {
+  color: #fff;
+}
+
+/* Guangxi Travel Section (sidebar) */
 .travel-section {
-  margin-bottom: 64px;
+  position: relative;
+  z-index: 1;
+  margin-top: 20px;
 }
 
 .travel-header {
+  position: relative;
+  z-index: 5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32px;
-}
-
-.travel-header .section-title {
-  margin-bottom: 0;
+  justify-content: center;
+  margin-top: 16px;
 }
 
 .recommend-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background: var(--primary-gradient);
-  color: white;
+  gap: 5px;
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
   border: none;
-  border-radius: var(--radius-lg);
-  font-size: 0.875rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.recommend-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
-}
-
-.travel-marquee {
-  overflow: hidden;
-  border-radius: var(--radius-xl);
-}
-
-.marquee-track {
-  display: flex;
-  gap: 20px;
-  width: max-content;
-  animation: marquee-scroll 80s linear infinite;
-}
-
-.marquee-track.paused {
-  animation-play-state: paused;
-}
-
-@keyframes marquee-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
+@media (hover: hover) and (pointer: fine) {
+  .recommend-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
   }
 }
 
-.travel-card {
+/* 景点：从头像卡片掉落 -> 展示 -> 被吸进推荐按钮 */
+.travel-machine {
   position: relative;
-  flex-shrink: 0;
-  width: 300px;
-  height: 200px;
-  border-radius: var(--radius-lg);
+  z-index: 0;
+}
+
+.travel-stage {
+  position: relative;
+  height: 150px;
+}
+
+.machine-card {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* 缩放时朝下方按钮的位置收缩 */
+  transform-origin: 50% 122%;
 }
 
-.travel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.travel-img {
+.machine-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
 }
 
-.travel-card:hover .travel-img {
-  transform: scale(1.08);
-}
-
-.travel-overlay {
+.machine-overlay {
   position: absolute;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  padding: 16px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  color: white;
+  padding: 26px 10px 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
 }
 
-.travel-name {
-  font-size: 1rem;
+.machine-name {
+  margin: 0 0 1px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  margin-bottom: 4px;
-  color: white;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.travel-desc {
-  font-size: 0.75rem;
-  opacity: 0.85;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+.machine-desc {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 新卡片从上方的卡片后面缓慢掉落，旧卡片被吸向按钮 */
+.travel-card-enter-active {
+  z-index: 4;
+  transition: transform 1.4s cubic-bezier(0.4, 0.05, 0.6, 0.95), opacity 0.7s ease;
+}
+
+.travel-card-leave-active {
+  z-index: 2;
+  transition: transform 2s cubic-bezier(0.5, 0.05, 0.3, 1), opacity 1.6s ease-in;
+}
+
+.travel-card-enter-from {
+  transform: translateY(-115%);
+  opacity: 0.5;
+}
+
+.travel-card-leave-to {
+  transform: translateY(10px) scale(0.04) rotate(5deg);
+  opacity: 0;
+}
+
+/* 吸入按钮：旋风圈 + 按钮脉冲 */
+.inhale-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 1.5px dashed var(--primary-color);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.travel-header.sucking .inhale-ring {
+  animation: inhale-ring 1.8s ease-in forwards;
+}
+
+@keyframes inhale-ring {
+  0% {
+    opacity: 0;
+    transform: scale(2.6) rotate(0deg);
+  }
+  30% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.15) rotate(320deg);
+  }
+}
+
+.travel-header.sucking .recommend-btn {
+  animation: btn-inhale 1.8s ease-in-out;
+}
+
+@keyframes btn-inhale {
+  0%,
+  65% {
+    transform: scale(1);
+  }
+  80% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Recommend Modal */
@@ -724,24 +1081,41 @@ const guangxiSpots = [
 }
 
 @media (max-width: 1024px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
   .profile-card {
-    flex-direction: column;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 24px;
+    text-align: left;
+  }
+
+  .travel-machine {
+    max-width: 400px;
+  }
+
+  .profile-avatar-wrapper {
+    width: 120px;
+    height: 120px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-meta {
+    align-items: flex-start;
   }
 
   .social-links {
-    justify-content: center;
-  }
-
-  .contact-card {
-    grid-template-columns: 1fr;
-  }
-
-  .contact-cta {
-    padding-left: 0;
-    padding-top: 32px;
-    border-left: none;
-    border-top: 1px solid var(--border-color);
+    justify-content: flex-start;
   }
 
   .bg-info {
@@ -755,18 +1129,63 @@ const guangxiSpots = [
 }
 
 @media (max-width: 768px) {
+  .about-page {
+    padding: 32px 0 64px;
+  }
+
+  .profile-card {
+    flex-direction: column;
+    gap: 0;
+    text-align: center;
+    padding: 24px 18px;
+  }
+
+  .profile-avatar-wrapper {
+    margin: 0 auto 12px;
+  }
+
+  .profile-meta {
+    align-items: center;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+
   .profile-name {
-    font-size: 2rem;
+    font-size: 1.375rem;
   }
 
-  .profile-avatar {
-    width: 150px;
-    height: 150px;
+  .section-title {
+    font-size: 1rem;
   }
 
-  .travel-card {
-    width: 240px;
-    height: 160px;
+  .about-bio {
+    font-size: 1.25rem;
+  }
+
+  /* 移动端气泡统一显示在时间线上方，避免超出屏幕 */
+  .growth-node {
+    position: static;
+  }
+
+  .node-bubble,
+  .growth-node.edge-start .node-bubble,
+  .growth-node.edge-end .node-bubble {
+    left: 0;
+    right: 0;
+    width: auto;
+    transform: translateY(6px);
+  }
+
+  .growth-node.active .node-bubble,
+  .growth-node.edge-start.active .node-bubble,
+  .growth-node.edge-end.active .node-bubble {
+    transform: translateY(0);
+  }
+
+  .node-bubble::after {
+    display: none;
   }
 
   .bg-spot-name {

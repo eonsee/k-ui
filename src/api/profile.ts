@@ -18,6 +18,8 @@ export interface ProfileVO {
   weibo: string
   gitee: string
   juejin: string
+  xiaohongshu: string
+  douyin: string
   website: string
   resumeUrl: string
   createTime: string

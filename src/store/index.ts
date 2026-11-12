@@ -90,6 +90,8 @@ function voToProfile(vo: ProfileVO, currentSkills: Profile['skills']): Profile {
       weibo: vo.weibo || undefined,
       gitee: vo.gitee || undefined,
       juejin: vo.juejin || undefined,
+      xiaohongshu: vo.xiaohongshu || undefined,
+      douyin: vo.douyin || undefined,
     },
     skills: currentSkills,
   }
