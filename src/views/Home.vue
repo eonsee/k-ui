@@ -14,7 +14,13 @@
         </div>
       </div>
       <div class="container hero-content">
-        <div class="hero-text">
+        <div
+          class="hero-text"
+          data-cursor="blend"
+          @pointerenter="onCursorEnter"
+          @pointermove="onCursorMove"
+          @pointerleave="onCursorLeave"
+        >
           <div class="hero-avatar-wrap animate-fade-in-up">
             <div class="hero-avatar-wrapper">
               <img src="/my.jpg" alt="oaken - 全栈开发工程师" class="hero-avatar" />
@@ -125,6 +131,11 @@
         </div>
       </div>
     </section>
+
+    <!-- DeepSeek 同款 blend 光标：白色圆 + difference 混合 -->
+    <Teleport to="body">
+      <canvas ref="cursorCanvas" class="custom-cursor-canvas" aria-hidden="true"></canvas>
+    </Teleport>
   </div>
 </template>
 
@@ -220,6 +231,124 @@ const homepageArticles = computed(() =>
     })
     .slice(0, 6)
 )
+
+// ============ DeepSeek 同款 blend 光标 ============
+const cursorCanvas = ref<HTMLCanvasElement | null>(null)
+let cursorCtx: CanvasRenderingContext2D | null = null
+let cursorRaf = 0
+let cursorActive = false
+let targetX = 0
+let targetY = 0
+let cursorX = 0
+let cursorY = 0
+let cursorAlpha = 0
+let cursorScale = 0.5
+let lastDrawX = 0
+let lastDrawY = 0
+let lastDrawR = 0
+
+const resizeCursorCanvas = () => {
+  const canvas = cursorCanvas.value
+  if (!canvas) return
+  const dpr = window.devicePixelRatio || 1
+  canvas.width = Math.round(window.innerWidth * dpr)
+  canvas.height = Math.round(window.innerHeight * dpr)
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  cursorCtx = ctx
+}
+
+const clearLastCursor = () => {
+  if (!cursorCtx || !lastDrawR) return
+  cursorCtx.clearRect(
+    lastDrawX - lastDrawR - 2,
+    lastDrawY - lastDrawR - 2,
+    (lastDrawR + 2) * 2,
+    (lastDrawR + 2) * 2
+  )
+}
+
+const animateCursor = () => {
+  if (!cursorCtx) { cursorRaf = 0; return }
+  const dx = targetX - cursorX
+  const dy = targetY - cursorY
+  const distance = Math.hypot(dx, dy)
+  const ease = distance < 50 ? 0.7 : 0.4
+
+  cursorX += dx * ease
+  cursorY += dy * ease
+  cursorAlpha += ((cursorActive ? 1 : 0) - cursorAlpha) * 0.24
+  cursorScale += ((cursorActive ? 1 : 0.5) - cursorScale) * 0.24
+
+  clearLastCursor()
+
+  const radius = 32 * cursorScale
+  if (cursorAlpha > 0.002) {
+    cursorCtx.save()
+    cursorCtx.globalAlpha = cursorAlpha
+    cursorCtx.fillStyle = '#ffffff'
+    cursorCtx.beginPath()
+    cursorCtx.arc(cursorX, cursorY, radius, 0, Math.PI * 2)
+    cursorCtx.fill()
+    cursorCtx.restore()
+    lastDrawX = cursorX
+    lastDrawY = cursorY
+    lastDrawR = radius
+  } else {
+    lastDrawR = 0
+  }
+
+  const settled =
+    Math.abs(dx) + Math.abs(dy) <= 0.1 &&
+    Math.abs((cursorActive ? 1 : 0) - cursorAlpha) <= 0.002 &&
+    Math.abs((cursorActive ? 1 : 0.5) - cursorScale) <= 0.002
+
+  if (settled) {
+    cursorRaf = 0
+    if (!cursorActive && cursorCtx) {
+      cursorCtx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+    }
+  } else {
+    cursorRaf = requestAnimationFrame(animateCursor)
+  }
+}
+
+const ensureCursorLoop = () => {
+  if (!cursorRaf) cursorRaf = requestAnimationFrame(animateCursor)
+}
+
+const onCursorEnter = (event: PointerEvent) => {
+  targetX = event.clientX
+  targetY = event.clientY
+  cursorX = targetX
+  cursorY = targetY
+  cursorAlpha = 1
+  cursorScale = 1
+  cursorActive = true
+  ensureCursorLoop()
+}
+
+const onCursorMove = (event: PointerEvent) => {
+  targetX = event.clientX
+  targetY = event.clientY
+  ensureCursorLoop()
+}
+
+const onCursorLeave = () => {
+  cursorActive = false
+  ensureCursorLoop()
+}
+
+onMounted(() => {
+  resizeCursorCanvas()
+  window.addEventListener('resize', resizeCursorCanvas)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeCursorCanvas)
+  if (cursorRaf) cancelAnimationFrame(cursorRaf)
+})
 
 const heroRef = ref<HTMLElement | null>(null)
 const heroRise = ref('105vh')
@@ -394,6 +523,23 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
 .hero-text {
   max-width: 520px;
   text-align: center;
+}
+
+/* DeepSeek 同款自定义光标 */
+.custom-cursor-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .custom-cursor-canvas {
+    display: none;
+  }
 }
 
 .hero-title {
@@ -696,7 +842,7 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
 }
 
 .section-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -722,6 +868,7 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
 .article-list {
   border-top: 1px solid var(--border-color);
 }
+
 
 .article-row {
   display: grid;

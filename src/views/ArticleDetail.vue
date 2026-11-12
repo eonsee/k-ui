@@ -53,9 +53,6 @@
                 </p>
               </div>
             </div>
-            <aside class="article-sidebar">
-              <ArticleToc :content="article.content" />
-            </aside>
           </div>
         </div>
       </div>
@@ -98,11 +95,6 @@
     </section>
   </div>
 
-  <!-- Auto Reader -->
-  <template v-if="article">
-    <AutoReader />
-  </template>
-
   <!-- Loading -->
   <div v-else-if="articleLoading" class="not-found">
     <div class="container">
@@ -134,8 +126,6 @@ import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
 import { useBlogStore } from '@/store'
 import type { Article } from '@/types'
-import ArticleToc from '@/components/article/ArticleToc.vue'
-import AutoReader from '@/components/article/AutoReader.vue'
 import myAvatar from '@/assets/my.jpg'
 
 const route = useRoute()
@@ -359,13 +349,12 @@ const shareArticle = () => {
 }
 
 .article-layout {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 48px;
+  display: block;
 }
 
 .article-main {
   max-width: 720px;
+  margin: 0 auto;
   min-width: 0;
 }
 
@@ -529,12 +518,6 @@ const shareArticle = () => {
   object-fit: contain;
 }
 
-.article-sidebar {
-  position: sticky;
-  top: 88px;
-  height: fit-content;
-}
-
 .author-info {
   display: flex;
   align-items: center;
@@ -687,15 +670,6 @@ const shareArticle = () => {
   font-weight: 500;
 }
 
-@media (max-width: 1024px) {
-  .article-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .article-sidebar {
-    display: none;
-  }
-}
 
 @media (max-width: 768px) {
   .article-title {
