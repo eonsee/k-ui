@@ -1,8 +1,9 @@
-# Meweb-Ui 个人博客前端
+# k-ui 个人博客前端
 
 > 全栈开发者 / 技术博主的个人博客前端。基于 **Vue 3 + TypeScript + Vite + Pinia** 构建，配套后端 API 服务 `api.mayekun.com`。
 
 🌐 在线地址：[https://mayekun.com](https://mayekun.com)
+💻 代码仓库：[https://github.com/eonsee/k-ui](https://github.com/eonsee/k-ui)
 🛠 技术栈：Vue 3 · TypeScript · Vite 5 · Pinia · Vue Router 4 · Axios · TailwindCSS
 
 <p align="center">
@@ -33,7 +34,7 @@
 
 ## 📌 项目简介
 
-`mayekun-ui` 是博客 [mayekun.com](https://mayekun.com) 的前端工程，承载个人主页、文章系统、作品集、关于页等功能。
+`k-ui` 是博客 [mayekun.com](https://mayekun.com) 的前端工程，承载个人主页、文章系统、作品集、关于页等功能。
 
 - 🎨 **设计风格**：现代简约、毛玻璃质感、响应式布局（桌面 / 平板 / 手机）
 - 🌗 **暗色模式**：跟随系统 / 手动切换
@@ -44,12 +45,12 @@
 
 | 模块 | 功能点 |
 |------|--------|
-| **首页** | 个人简介、统计图表、最新文章卡片 |
-| **文章列表** | 分类筛选、关键词搜索、分页、热力图（四季/二十四节气双模式）、敲木鱼功德互动 |
+| **首页** | 个人简介、真实数据统计、作品封面轮播、文章列表（最新 6 篇） |
+| **文章列表** | 分类筛选、关键词搜索、分页、活跃度热力图、敲木鱼功德互动 |
 | **文章详情** | Markdown 渲染、代码高亮、文章目录 (TOC)、自动滚动阅读、悬浮音乐播放器 |
 | **作品集** | 分类筛选、**脑力点位图**（左侧点位网络 + 右侧详情卡片）、成长轨迹时间轴 |
 | **关于页** | 个人介绍、技能图谱、二维码、成长故事 |
-| **通用** | 顶部导航、底部信息、QQ / 微信二维码、备案号、运行天数实时统计 |
+| **通用** | 顶部导航（主题切换、GitHub / Gitee）、底部社交信息、QQ 二维码、备案号、运行天数实时统计 |
 
 ## 🧰 技术栈
 
@@ -73,7 +74,7 @@
 ## 📂 项目结构
 
 ```
-mayekun-ui/
+k-ui/
 ├── public/                          # 静态资源（直接拷贝到 dist 根目录）
 │   ├── favicon.png / favicon.svg    # 网站图标
 │   ├── my.jpg                       # og:image 社交分享图
@@ -92,20 +93,20 @@ mayekun-ui/
 │   ├── components/
 │   │   ├── article/                 # 文章相关组件
 │   │   │   ├── ArticleCard.vue      # 文章卡片
-│   │   │   ├── ActivityHeatmap.vue  # 文章活跃度热力图（四季/节气）
-│   │   │   ├── IPCard.vue           # 访客 IP 卡片（图片版，已停用）
-│   │   │   ├── IPDetailCard.vue     # 访客 IP 详情卡片（API 版，已停用）
+│   │   │   ├── ActivityHeatmap.vue  # 文章活跃度热力图（固定夏季配色）
+│   │   │   ├── IPCard.vue           # 访客 IP 卡片（已停用）
+│   │   │   ├── IPDetailCard.vue     # 访客 IP 详情卡片（已停用）
 │   │   │   ├── WoodenFish.vue       # 敲木鱼互动（功德计数）
 │   │   │   ├── ArticleToc.vue       # 文章目录
 │   │   │   ├── AutoReader.vue       # 自动滚动阅读
 │   │   │   ├── FloatingMusicPlayer.vue / MusicPlayer.vue
 │   │   │   └── SeasonTree.vue       # 四季树（历史遗留）
 │   │   ├── layout/                  # 布局组件
-│   │   │   ├── AppHeader.vue        # 顶部导航
-│   │   │   └── AppFooter.vue        # 底部信息
-│   │   ├── work/WorkCard.vue        # 作品卡片（备用，新版已用脑力点位图）
-│   │   ├── home/StatsChart.vue      # 首页统计图表
-│   │   └── common/Couplet.vue       # 春联动画
+│   │   │   ├── AppHeader.vue        # 顶部导航（主题、GitHub / Gitee）
+│   │   │   └── AppFooter.vue        # 底部信息（社交、QQ 二维码、备案）
+│   │   ├── work/WorkCard.vue        # 作品卡片（备用，未启用）
+│   │   ├── home/StatsChart.vue      # 首页统计图表（已停用）
+│   │   └── common/Couplet.vue       # 春联动画（已停用）
 │   ├── composables/
 │   │   └── useTheme.ts              # 主题切换逻辑
 │   ├── lib/utils.ts                 # 通用工具函数
@@ -188,7 +189,7 @@ npm run lint:fix
 | 路径 | 名称 | 页面 | 说明 |
 |------|------|------|------|
 | `/` | home | `Home.vue` | 首页 |
-| `/articles` | articles | `Articles.vue` | 文章列表（含热力图 + IP 卡片） |
+| `/articles` | articles | `Articles.vue` | 文章列表（含热力图 + 敲木鱼） |
 | `/article/:id` | article-detail | `ArticleDetail.vue` | 文章详情（Markdown） |
 | `/works` | works | `Works.vue` | 作品集（脑力点位图） |
 | `/about` | about | `About.vue` | 关于我 |
@@ -205,7 +206,7 @@ npm run lint:fix
 - **个人信息**：`profile`、`fetchProfile()`
 - **技能**：`skills`、`fetchSkills()`
 - **成长时间轴**：`growthTimeline`、`fetchGrowthTimeline()`
-- **热力图模式**：`heatmapMode`（`season` / `solar`）、`currentSeason`、`currentSolarTerm`
+- **热力图模式**：`heatmapMode`（`season` / `solar`）、`currentSeason`（固定 `summer`）、`currentSolarTerm`
 - **筛选状态**：`searchQuery`、`currentArticleCategory`、`currentWorkCategory`
 
 ### 关键常量
@@ -216,16 +217,13 @@ npm run lint:fix
 
 ### 1. `ActivityHeatmap.vue`（文章活跃度热力图）
 - 365 天网格热力图，按文章发布数量上色
-- **双模式切换**：
-  - **四季模式**（春/夏/秋/冬）：4 套独立配色
-  - **节气模式**（24 节气）：每个节气独立颜色 + 物候描述
-- 根据当前月份自动推断默认季节
+- 固定使用夏季青蓝色阶，已关闭四季切换与按月份自动推断季节
+- 顶部的四季切换按钮已移除
 
-### 2. `IPCard.vue` / `IPDetailCard.vue`（访客 IP 卡片）
+### 2. `WoodenFish.vue`（敲木鱼互动）
 - 位置：文章列表页右侧（与热力图并排）
-- **`IPCard`**：使用 ippure.com 图片接口 `https://my.ippure.com/v1/card`
-- **`IPDetailCard`**：通过 fetch `https://my.ippure.com/v1/info` 自定义渲染
-  - ⚠️ 浏览器直接 fetch 会遇到 CORS，生产环境需通过后端代理
+- 点击木鱼累计「功德」，带音效与敲击动效
+- 原 `IPCard.vue` / `IPDetailCard.vue` 访客 IP 卡片已停用
 
 ### 3. `WorkCard.vue` + `Works.vue`（作品脑力点位图）
 - 左侧散布的**彩色点位**代表作品（按索引分配 18 色调色板）
@@ -235,9 +233,10 @@ npm run lint:fix
 - 顶部 **SVG 曲线成长时间轴**，含"成长轨迹 / 每一步都算数"端点文字
 
 ### 4. `AppFooter.vue`（底栏）
-- 显示 QQ / 微信二维码（可切换）
+- 站点标语与社交入口（GitHub / Twitter / Email）
+- QQ 二维码
 - 工信部备案号（带 logo）
-- **网站运行天数**（每分钟实时更新，跨午夜自动 +1）
+- **网站运行天数与访问量**（每分钟实时更新，跨午夜自动 +1）
 - 版权信息 + ICP 备案
 
 ### 5. `ArticleDetail.vue`（文章详情）
@@ -272,11 +271,11 @@ const service = axios.create({
 
 ## 🎯 特色功能详解
 
-### 二十四节气热力图
-- 在 `store/index.ts` 中维护 `SOLAR_TERMS` 常量数组
-- 每个节气有：名称、月份、日期、颜色、物候描述
-- 切换到节气模式时，格子颜色随当前节气变化
-- 显示当前节气的物候文案（如"东风解冻，蛰虫始振"）
+### 夏季配色主题
+- 全站主色固定为夏季青蓝 `#06b6d4`，通过 `html[data-season='summer']` 的 CSS 变量生效
+- `index.html` 初始即标记 `data-season="summer"`，避免首屏闪出其他季节的颜色
+- 已关闭随四季自动切换，热力图也不再提供季节切换按钮
+- `store/index.ts` 中的 `SOLAR_TERMS` 二十四节气配置保留备用
 
 ### 脑力点位图
 - **位置算法**：黄金角分布（`Math.PI * (3 - Math.sqrt(5))`），点位均匀散布在圆形区域
@@ -351,7 +350,7 @@ npm run build              # 生成 dist/
 
 ## ⚠️ 待优化项 / Known Issues
 
-- [ ] `IPDetailCard.vue` 因 ippure.com CORS 限制暂未启用（已用 `IPCard.vue` 图片版替代）
+- [ ] 访客 IP 卡片（`IPCard.vue` / `IPDetailCard.vue`）因外部接口 CORS 限制已停用，文章页改用敲木鱼互动
 - [ ] 移动端脑力点位图点位标签已隐藏（`@media max-width: 768px`），但仍可点击
 - [ ] 文章热力图 365 天格子在超窄屏（< 360px）下可能略拥挤
 - [ ] `WorkCard.vue` 已被新脑力点位图替代但文件保留，可清理

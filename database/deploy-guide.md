@@ -307,7 +307,7 @@ certbot --nginx -d mayekun.com -d www.mayekun.com
 ### 8.2 打包
 
 ```bash
-cd mayekun-ui
+cd k-ui
 npm run build
 ```
 

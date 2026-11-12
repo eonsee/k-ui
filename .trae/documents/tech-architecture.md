@@ -49,7 +49,7 @@ graph TB
 ## 4. 项目结构
 
 ```
-mayekun-ui/
+k-ui/
 ├── public/
 │   └── favicon.ico
 ├── src/
