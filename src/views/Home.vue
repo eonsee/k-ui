@@ -79,136 +79,49 @@
       </div>
     </section>
 
-    <!-- Featured Articles -->
-    <section class="featured-section">
+    <!-- Article List -->
+    <section class="article-list-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">精选文章</h2>
+          <div class="section-heading">
+            <h2 class="section-title">文章列表</h2>
+            <p class="section-subtitle">记录技术、设计与生活</p>
+          </div>
           <router-link to="/articles" class="view-all">
             查看全部 <ArrowRight :size="16" />
           </router-link>
         </div>
-        <div class="articles-grid">
-          <ArticleCard
-            v-for="(article, index) in featuredArticles"
+
+        <div class="article-list">
+          <router-link
+            v-for="(article, index) in homepageArticles"
             :key="article.id"
-            :article="article"
-            :style="{ animationDelay: `${index * 0.1}s` }"
-            class="animate-fade-in-up"
-          />
-        </div>
-      </div>
-    </section>
+            :to="`/article/${article.id}`"
+            class="article-row"
+          >
+            <span class="article-row-index">{{ String(index + 1).padStart(2, '0') }}</span>
 
-    <!-- Works Section  -->
-    <section class="works-section" :style="worksSectionStyle">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">作品展示</h2>
-          <router-link to="/works" class="view-all">
-            查看全部 <ArrowRight :size="16" />
+            <div class="article-row-main">
+              <div class="article-row-meta">
+                <span class="article-row-category">{{ article.category }}</span>
+                <span class="article-row-date">{{ article.createdAt }}</span>
+              </div>
+              <h3 class="article-row-title">{{ article.title }}</h3>
+              <p class="article-row-summary">{{ article.summary }}</p>
+            </div>
+
+            <div class="article-row-side">
+              <div class="article-row-stats">
+                <span><Clock :size="13" /> {{ article.readTime }} 分钟</span>
+                <span><Eye :size="13" /> {{ article.views }}</span>
+              </div>
+              <div class="article-row-tags">
+                <span v-for="tag in article.tags.slice(0, 2)" :key="tag" class="article-row-tag">{{ tag }}</span>
+              </div>
+            </div>
+
+            <ArrowUpRight :size="18" class="article-row-arrow" />
           </router-link>
-        </div>
-        <div class="works-showcase">
-          <!-- 左侧作品选择列表 -->
-          <div class="works-selector">
-            <div
-              v-for="work in featuredWorks"
-              :key="work.id"
-              class="work-item"
-              :class="{ active: selectedWork?.id === work.id }"
-              @click="selectedWork = work"
-            >
-              <div class="work-item-thumb">
-                <img :src="work.cover" :alt="work.title" />
-              </div>
-              <div class="work-item-info">
-                <span class="work-item-category">{{ work.category }}</span>
-                <h4 class="work-item-title">{{ work.title }}</h4>
-                <p class="work-item-desc">{{ work.description }}</p>
-                <div class="work-item-tags">
-                  <span v-for="tag in work.tags.slice(0, 2)" :key="tag" class="mini-tag">{{ tag }}</span>
-                </div>
-              </div>
-              <ChevronRight :size="16" class="work-item-arrow" />
-            </div>
-          </div>
-
-          <!-- 右侧预览区 -->
-          <div class="works-preview">
-            <div v-if="selectedWork" class="preview-content">
-              <!-- 浏览器窗口 -->
-              <div class="preview-browser">
-                <div class="browser-toolbar">
-                  <div class="browser-dots">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                  </div>
-                  <div class="browser-address">
-                    <Lock :size="12" />
-                    <span class="address-text">{{ selectedWork.link || '本地预览' }}</span>
-                  </div>
-                  <div class="browser-actions">
-                    <a v-if="selectedWork.link" :href="selectedWork.link" target="_blank" class="browser-action-btn" @click.stop title="新窗口打开">
-                      <ExternalLink :size="14" />
-                    </a>
-                    <a v-if="selectedWork.github" :href="selectedWork.github" target="_blank" class="browser-action-btn" @click.stop title="GitHub">
-                      <Github :size="14" />
-                    </a>
-                  </div>
-                </div>
-                <div class="browser-viewport">
-                  <!-- 有真实链接时用 iframe 展示 -->
-                  <iframe
-                    v-if="selectedWork.link"
-                    :src="selectedWork.link"
-                    :title="selectedWork.title"
-                    sandbox="allow-scripts allow-same-origin allow-popups"
-                    loading="lazy"
-                  ></iframe>
-                  <!-- 无链接时，展示作品图片集 -->
-                  <div v-else class="viewport-gallery">
-                    <div class="gallery-slides" :style="{ transform: `translateX(-${galleryIndex * 100}%)` }">
-                      <div v-for="(img, i) in getWorkImages(selectedWork)" :key="i" class="gallery-slide">
-                        <img :src="img" :alt="`${selectedWork.title} - ${i + 1}`" />
-                      </div>
-                    </div>
-                    <div v-if="getWorkImages(selectedWork).length > 1" class="gallery-nav">
-                      <button class="gallery-btn" @click="galleryPrev" :disabled="galleryIndex === 0">
-                        <ChevronLeft :size="16" />
-                      </button>
-                      <span class="gallery-indicator">{{ galleryIndex + 1 }} / {{ getWorkImages(selectedWork).length }}</span>
-                      <button class="gallery-btn" @click="galleryNext" :disabled="galleryIndex === getWorkImages(selectedWork).length - 1">
-                        <ChevronRight :size="16" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- 底部信息栏 -->
-              <div class="preview-footer">
-                <div class="preview-meta">
-                  <h3 class="preview-title">{{ selectedWork.title }}</h3>
-                  <p class="preview-desc">{{ selectedWork.description }}</p>
-                </div>
-                <div class="preview-actions">
-                  <a v-if="selectedWork.link" :href="selectedWork.link" target="_blank" class="action-btn primary" @click.stop>
-                    <ExternalLink :size="15" />
-                    访问
-                  </a>
-                  <a v-if="selectedWork.github" :href="selectedWork.github" target="_blank" class="action-btn outline" @click.stop>
-                    <Github :size="15" />
-                    源码
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div v-else class="preview-empty">
-              <Monitor :size="48" />
-              <p>选择作品查看预览</p>
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -216,12 +129,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { ArrowRight, ChevronDown, ChevronRight, ChevronLeft, ExternalLink, Github, Lock, Monitor } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ArrowRight, ArrowUpRight, ChevronDown, Clock, Eye } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
-import ArticleCard from '@/components/article/ArticleCard.vue'
-import WorkCard from '@/components/work/WorkCard.vue'
-import type { Work } from '@/types'
 
 const blogStore = useBlogStore()
 
@@ -299,125 +209,17 @@ const works = computed(() => blogStore.allWorks)
 
 // 轮播使用的作品封面
 const marqueeWorks = computed(() => works.value.filter(work => work.cover))
-const featuredArticles = computed(() => blogStore.featuredArticles)
-const featuredWorks = computed(() => blogStore.filteredWorks.slice(0, 3))
 
-const selectedWork = ref<Work | null>(featuredWorks.value[0] || null)
-const galleryIndex = ref(0)
-
-// 获取作品的展示图片
-const getWorkImages = (work: Work): string[] => {
-  if (work.images && work.images.length > 0) return work.images
-  return [work.cover]
-}
-
-const galleryPrev = () => {
-  if (galleryIndex.value > 0) galleryIndex.value--
-}
-
-const galleryNext = () => {
-  const work = selectedWork.value
-  if (work && galleryIndex.value < getWorkImages(work).length - 1) galleryIndex.value++
-}
-
-// 切换作品时重置
-watch(selectedWork, () => {
-  galleryIndex.value = 0
-})
-
-// ============ 作品封面主色提取（可关闭：设为 false 即可） ============
-const DOMINANT_COLOR_ENABLED = false
-
-const dominantColor = ref('')
-
-// 从图片提取主色（通过 fetch blob 绕过 CORS）
-async function extractDominantColor(imageUrl: string): Promise<string> {
-  if (!imageUrl) return ''
-  try {
-    const resp = await fetch(imageUrl, { mode: 'cors' })
-    const blob = await resp.blob()
-    const blobUrl = URL.createObjectURL(blob)
-    const result = await new Promise<string>((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          if (!ctx) { resolve(''); return }
-          const size = 50
-          canvas.width = size
-          canvas.height = size
-          ctx.drawImage(img, 0, 0, size, size)
-          const data = ctx.getImageData(0, 0, size, size).data
-          let r = 0, g = 0, b = 0, count = 0
-          for (let i = 0; i < data.length; i += 4) {
-            const pr = data[i], pg = data[i + 1], pb = data[i + 2], pa = data[i + 3]
-            if (pa < 128) continue
-            const brightness = (pr + pg + pb) / 3
-            if (brightness < 30 || brightness > 225) continue
-            r += pr; g += pg; b += pb; count++
-          }
-          if (count === 0) { resolve(''); return }
-          resolve(`${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}`)
-        } catch {
-          resolve('')
-        }
-      }
-      img.onerror = () => resolve('')
-      img.src = blobUrl
+// 首页文章列表：按发布时间倒序取前 6 篇
+const homepageArticles = computed(() =>
+  [...blogStore.allArticles]
+    .sort((a, b) => {
+      const ta = new Date(a.createdAt).getTime()
+      const tb = new Date(b.createdAt).getTime()
+      return (Number.isNaN(tb) ? 0 : tb) - (Number.isNaN(ta) ? 0 : ta)
     })
-    URL.revokeObjectURL(blobUrl)
-    return result
-  } catch {
-    // CORS 失败时，尝试直接加载（同源图片）
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          if (!ctx) { resolve(''); return }
-          const size = 50
-          canvas.width = size
-          canvas.height = size
-          ctx.drawImage(img, 0, 0, size, size)
-          const data = ctx.getImageData(0, 0, size, size).data
-          let r = 0, g = 0, b = 0, count = 0
-          for (let i = 0; i < data.length; i += 4) {
-            const pr = data[i], pg = data[i + 1], pb = data[i + 2], pa = data[i + 3]
-            if (pa < 128) continue
-            const brightness = (pr + pg + pb) / 3
-            if (brightness < 30 || brightness > 225) continue
-            r += pr; g += pg; b += pb; count++
-          }
-          if (count === 0) { resolve(''); return }
-          resolve(`${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}`)
-        } catch {
-          resolve('')
-        }
-      }
-      img.onerror = () => resolve('')
-      img.src = imageUrl
-    })
-  }
-}
-
-// 切换作品时提取主色
-watch(selectedWork, async (work) => {
-  if (!DOMINANT_COLOR_ENABLED || !work?.cover) {
-    dominantColor.value = ''
-    return
-  }
-  dominantColor.value = await extractDominantColor(work.cover)
-}, { immediate: true })
-
-// 作品展示区域背景样式
-const worksSectionStyle = computed(() => {
-  if (!DOMINANT_COLOR_ENABLED || !dominantColor.value) return {}
-  return {
-    background: `linear-gradient(135deg, rgba(${dominantColor.value}, 0.08) 0%, rgba(${dominantColor.value}, 0.03) 50%, var(--bg-secondary) 100%)`,
-  }
-})
+    .slice(0, 6)
+)
 
 const heroRef = ref<HTMLElement | null>(null)
 const heroRise = ref('105vh')
@@ -876,13 +678,8 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
 }
 
 /* Sections */
-.featured-section,
-.works-section {
-  padding: 80px 0;
-}
-
-.works-section {
-  background: var(--bg-secondary);
+.article-list-section {
+  padding: 80px 0 96px;
 }
 
 .section-header {
@@ -892,9 +689,20 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
   margin-bottom: 40px;
 }
 
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
 .section-title {
   font-size: 2rem;
   font-weight: 600;
+}
+
+.section-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
 }
 
 .view-all {
@@ -910,383 +718,127 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
   color: var(--secondary-color);
 }
 
-.articles-grid {
+/* Article List：编辑式横排列表 */
+.article-list {
+  border-top: 1px solid var(--border-color);
+}
+
+.article-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-/* Works Showcase */
-.works-showcase {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
-  align-items: start;
-}
-
-/* 左侧选择列表 */
-.works-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.work-item {
-  display: flex;
+  grid-template-columns: 64px minmax(0, 1fr) 190px 24px;
   align-items: center;
-  gap: 14px;
-  padding: 12px;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all 0.25s ease;
-  border: 2px solid transparent;
-  background: var(--bg-primary);
+  gap: 24px;
+  padding: 24px 12px;
+  border-bottom: 1px solid var(--border-color);
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.25s ease;
 }
 
-.work-item:hover {
-  background: var(--bg-secondary);
-  transform: translateX(4px);
+.article-row-index {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
 }
 
-.work-item.active {
-  border-color: var(--primary-color);
-  background: var(--bg-primary);
-  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.12);
-}
-
-.work-item-thumb {
-  width: 64px;
-  height: 48px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.work-item-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.work-item-info {
-  flex: 1;
+.article-row-main {
   min-width: 0;
 }
 
-.work-item-category {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.article-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
 }
 
-.work-item-title {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
+.article-row-category {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.article-row-date {
+  font-family: var(--font-mono);
+}
+
+.article-row-title {
+  margin: 6px 0;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 2px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.25s ease;
 }
 
-.work-item-desc {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  line-height: 1.4;
+.article-row-summary {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.work-item-tags {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.mini-tag {
-  padding: 1px 6px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-full);
-  font-size: 0.625rem;
-  color: var(--text-tertiary);
-}
-
-.work-item-arrow {
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  opacity: 0;
-  transition: all 0.25s ease;
-}
-
-.work-item:hover .work-item-arrow,
-.work-item.active .work-item-arrow {
-  opacity: 1;
-  color: var(--primary-color);
-}
-
-/* 右侧预览区 */
-.works-preview {
-  position: sticky;
-  top: 80px;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-}
-
-.preview-content {
+.article-row-side {
   display: flex;
   flex-direction: column;
-}
-
-/* 浏览器窗口 */
-.preview-browser {
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  overflow: hidden;
-}
-
-.browser-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: #1e1e2e;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.browser-dots {
-  display: flex;
-  gap: 7px;
-}
-
-.browser-dots .dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-}
-
-.browser-dots .dot:nth-child(1) { background: #ff5f57; }
-.browser-dots .dot:nth-child(2) { background: #febc2e; }
-.browser-dots .dot:nth-child(3) { background: #28c840; }
-
-.browser-address {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-full);
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.75rem;
-  min-width: 0;
-}
-
-.address-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.browser-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.browser-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  color: rgba(255, 255, 255, 0.5);
-  transition: all 0.2s ease;
-}
-
-.browser-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.browser-viewport {
-  height: 420px;
-  background: #f5f5f5;
-  overflow: hidden;
-}
-
-.browser-viewport iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: white;
-}
-
-.viewport-gallery {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
-.gallery-slides {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  transition: transform 0.4s ease;
-}
-
-.gallery-slide {
-  min-width: 100%;
-  height: 100%;
-  flex-shrink: 0;
-}
-
-.gallery-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.gallery-nav {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  border-radius: var(--radius-full);
-  z-index: 10;
-}
-
-.gallery-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.gallery-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.gallery-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.gallery-indicator {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-variant-numeric: tabular-nums;
-  min-width: 40px;
-  text-align: center;
-}
-
-/* 底部信息栏 */
-.preview-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-primary);
-}
-
-.preview-meta {
-  min-width: 0;
-  flex: 1;
-}
-
-.preview-title {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.preview-desc {
-  font-size: 0.8125rem;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.preview-actions {
-  display: flex;
+  align-items: flex-end;
   gap: 8px;
-  flex-shrink: 0;
-  margin-left: 16px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
 }
 
-.action-btn {
+.article-row-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.article-row-stats span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 7px 14px;
-  border-radius: var(--radius-lg);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  transition: all 0.25s ease;
-  white-space: nowrap;
+  gap: 4px;
 }
 
-.action-btn.primary {
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.action-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  color: white;
-}
-
-.action-btn.outline {
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.action-btn.outline:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-.preview-empty {
+.article-row-tags {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 420px;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.article-row-tag {
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  font-size: 0.6875rem;
   color: var(--text-tertiary);
 }
 
-.preview-empty p {
-  font-size: 0.9375rem;
+.article-row-arrow {
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .article-row:hover {
+    background: var(--bg-secondary);
+  }
+
+  .article-row:hover .article-row-title {
+    color: var(--primary-color);
+  }
+
+  .article-row:hover .article-row-arrow {
+    opacity: 1;
+    color: var(--primary-color);
+    transform: translate(2px, -2px);
+  }
 }
 
 /* Responsive */
@@ -1308,30 +860,14 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
     justify-content: center;
   }
 
-  .articles-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .article-row {
+    grid-template-columns: 48px minmax(0, 1fr) 24px;
+    gap: 16px;
   }
 
-  .works-showcase {
-    grid-template-columns: 1fr;
+  .article-row-side {
+    display: none;
   }
-
-  .works-selector {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    gap: 12px;
-  }
-
-  .work-item {
-    min-width: 220px;
-    flex-shrink: 0;
-  }
-
-  .works-preview {
-    position: static;
-  }
-
 }
 
 @media (max-width: 768px) {
@@ -1350,39 +886,43 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
     height: 180px;
   }
 
-  .articles-grid {
-    grid-template-columns: 1fr;
+  .article-list-section {
+    padding: 56px 0 64px;
   }
 
-  .works-showcase {
-    grid-template-columns: 1fr;
+  .section-header {
+    align-items: flex-start;
+    margin-bottom: 24px;
   }
 
-  .works-selector {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    gap: 10px;
-  }
-
-  .work-item {
-    min-width: 200px;
-    flex-shrink: 0;
-  }
-
-  .browser-viewport {
-    height: 280px;
-  }
-
-  .preview-footer {
+  .section-heading {
     flex-direction: column;
     align-items: flex-start;
+    gap: 4px;
+  }
+
+  .article-row {
+    grid-template-columns: minmax(0, 1fr) 20px;
     gap: 12px;
+    padding: 20px 0;
   }
 
-  .preview-actions {
-    margin-left: 0;
+  .article-row-index {
+    display: none;
   }
 
+  .article-row-title {
+    font-size: 1rem;
+    white-space: normal;
+  }
+
+  .article-row-summary {
+    -webkit-line-clamp: 2;
+  }
+
+  /* 触摸设备没有悬停，箭头常驻以提示可点击 */
+  .article-row-arrow {
+    opacity: 1;
+  }
 }
 </style>
