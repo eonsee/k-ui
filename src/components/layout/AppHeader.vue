@@ -45,6 +45,19 @@
           </svg>
         </a>
 
+        <a
+          href="https://gitee.com/mayekun"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="gitee-link"
+          aria-label="Gitee"
+          title="Gitee"
+        >
+          <svg class="gitee-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11.984 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.016 0zm6.09 5.333c.328 0 .593.266.592.593v1.482a.594.594 0 0 1-.593.592H9.777c-.982 0-1.778.796-1.778 1.778v5.63c0 .327.266.592.593.592h5.63c.982 0 1.778-.796 1.778-1.778v-.296a.593.593 0 0 0-.592-.593h-4.15a.592.592 0 0 1-.592-.592v-1.482a.593.593 0 0 1 .593-.592h6.815c.327 0 .593.265.593.592v3.408a4 4 0 0 1-4 4H5.926a.593.593 0 0 1-.593-.593V9.778a4.444 4.444 0 0 1 4.445-4.444h8.296Z" />
+          </svg>
+        </a>
+
         <button
           class="mobile-menu-btn"
           @click="toggleMobileMenu"
@@ -228,7 +241,6 @@ onUnmounted(() => {
   transition: color 0.3s ease;
 }
 
-.nav-link:hover,
 .nav-link.router-link-active {
   color: var(--text-primary);
 }
@@ -251,8 +263,15 @@ onUnmounted(() => {
   background: rgba(248, 250, 252, 0.08);
 }
 
-.nav-link:hover .nav-link-bubble {
-  transform: translate(-50%, -50%) scale(1);
+/* 仅在支持悬停的精确指针设备上响应 hover，避免移动端点击后样式残留 */
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-link:hover .nav-link-bubble {
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .nav-link-text {
@@ -269,6 +288,7 @@ onUnmounted(() => {
 /* 参考 lodop.fios.top 的图标按钮悬停样式 */
 .theme-toggle,
 .github-link,
+.gitee-link,
 .mobile-menu-btn {
   display: flex;
   align-items: center;
@@ -278,18 +298,35 @@ onUnmounted(() => {
   border-radius: 9px;
   border: 1px solid transparent;
   color: var(--text-secondary);
+  -webkit-tap-highlight-color: transparent;
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
-.theme-toggle:hover,
-.github-link:hover,
-.mobile-menu-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover,
+  .github-link:hover,
+  .gitee-link:hover,
+  .mobile-menu-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
 }
 
-.github-icon {
+/* 触摸设备：按下时给即时反馈，松手即恢复，不做残留 */
+@media (hover: none) {
+  .theme-toggle:active,
+  .github-link:active,
+  .gitee-link:active,
+  .mobile-menu-btn:active {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+}
+
+.github-icon,
+.gitee-icon {
   width: 19px;
   height: 19px;
 }
@@ -337,12 +374,18 @@ onUnmounted(() => {
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+  -webkit-tap-highlight-color: transparent;
   transition: color 0.2s ease;
 }
 
-.mobile-nav-link:hover,
 .mobile-nav-link.router-link-active {
   color: var(--primary-color);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mobile-nav-link:hover {
+    color: var(--primary-color);
+  }
 }
 
 .mobile-nav-index {
@@ -371,9 +414,11 @@ onUnmounted(() => {
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 
-.mobile-menu-email:hover {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
+@media (hover: hover) and (pointer: fine) {
+  .mobile-menu-email:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
 }
 
 .mobile-menu-tagline {
