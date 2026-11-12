@@ -94,7 +94,7 @@
     </nav>
 
     <div class="mobile-menu-footer">
-      <a href="mailto:hello@mayekun.com" class="mobile-menu-email">hello@mayekun.com</a>
+      <a href="mailto:info@mayekun.com" class="mobile-menu-email">info@mayekun.com</a>
       <span class="mobile-menu-tagline">每一步，都算数</span>
     </div>
   </div>
