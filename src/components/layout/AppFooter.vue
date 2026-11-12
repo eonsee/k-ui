@@ -12,14 +12,6 @@
 
         <div class="footer-links">
           <div class="footer-column">
-            <h4 class="footer-title">导航</h4>
-            <router-link to="/" class="footer-link">首页</router-link>
-            <router-link to="/articles" class="footer-link">文章</router-link>
-            <router-link to="/works" class="footer-link">作品</router-link>
-            <router-link to="/about" class="footer-link">关于</router-link>
-          </div>
-
-          <div class="footer-column">
             <h4 class="footer-title">社交</h4>
             <a href="https://github.com/eonsee" target="_blank" class="footer-link">
               <Github :size="16" />
