@@ -2,21 +2,6 @@
   <div class="activity-heatmap">
     <div class="heatmap-header">
       <h3 class="heatmap-title">文章动态</h3>
-      <div class="heatmap-controls">
-        <!-- 四季选择 -->
-        <div class="season-switch">
-          <button
-            v-for="s in seasons"
-            :key="s.key"
-            class="season-btn"
-            :class="{ active: currentSeason === s.key }"
-            @click="blogStore.currentSeason = s.key"
-            :title="s.label"
-          >
-            {{ s.icon }}
-          </button>
-        </div>
-      </div>
     </div>
     <div class="heatmap-wrapper">
       <!-- 热力图主体 -->
@@ -86,7 +71,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useBlogStore, SOLAR_TERMS, type SolarTermKey, type HeatmapMode } from '@/store'
+import { useBlogStore, SOLAR_TERMS, type SolarTermKey } from '@/store'
 
 const blogStore = useBlogStore()
 const currentSeason = computed(() => blogStore.currentSeason)
@@ -96,19 +81,6 @@ const heatmapMode = computed(() => blogStore.heatmapMode)
 interface ActivityDay {
   date: string
   count: number
-}
-
-// 季节配置
-const seasons: { key: 'spring' | 'summer' | 'autumn' | 'winter'; label: string; icon: string }[] = [
-  { key: 'spring', label: '春季', icon: '春' },
-  { key: 'summer', label: '夏季', icon: '夏' },
-  { key: 'autumn', label: '秋季', icon: '秋' },
-  { key: 'winter', label: '冬季', icon: '冬' }
-]
-
-// 模式切换
-const setMode = (mode: HeatmapMode) => {
-  blogStore.heatmapMode = mode
 }
 
 // 判断文字颜色（深色背景用白字，浅色背景用黑字）
@@ -251,13 +223,6 @@ onMounted(() => {
   margin: 0;
 }
 
-.heatmap-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .mode-switch {
   display: flex;
   gap: 2px;
@@ -283,34 +248,6 @@ onMounted(() => {
 }
 
 .mode-btn.active {
-  background: var(--primary-color);
-  color: white;
-}
-
-.season-switch {
-  display: flex;
-  gap: 4px;
-}
-
-.season-btn {
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--bg-tertiary);
-  color: var(--text-tertiary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.season-btn:hover {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.season-btn.active {
   background: var(--primary-color);
   color: white;
 }

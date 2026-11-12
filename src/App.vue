@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, computed, watchEffect, nextTick } from 'vue'
+import { ref, provide, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { theme as antdThemeFunc } from 'ant-design-vue'
 import { useBlogStore } from '@/store'
@@ -110,16 +110,15 @@ const seasonColors: Record<string, string> = {
   winter: '#6366f1',
 }
 
-// 监听季节变化，切换主题色
-watchEffect(() => {
-  document.documentElement.setAttribute('data-season', blogStore.currentSeason)
-})
+// 固定使用夏季配色，关闭随四季变化
+const FIXED_SEASON = 'summer'
+document.documentElement.setAttribute('data-season', FIXED_SEASON)
 
 // Ant Design 动态主题
 const antdTheme = computed(() => ({
   algorithm: isDark.value ? antdThemeFunc.darkAlgorithm : antdThemeFunc.defaultAlgorithm,
   token: {
-    colorPrimary: seasonColors[blogStore.currentSeason] || '#3b82f6',
+    colorPrimary: seasonColors[FIXED_SEASON] || '#06b6d4',
     ...(isDark.value
       ? {
           colorBgBase: '#000000',

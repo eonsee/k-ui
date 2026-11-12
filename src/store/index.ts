@@ -10,14 +10,6 @@ import { categoryApi, type CategoryVO } from '@/api/category'
 import { workApi, type WorkVO } from '@/api/work'
 import { resolveUrl } from '@/api/request'
 
-function getDefaultSeason(): 'spring' | 'summer' | 'autumn' | 'winter' {
-  const month = new Date().getMonth() + 1
-  if (month >= 3 && month <= 5) return 'spring'
-  if (month >= 6 && month <= 8) return 'summer'
-  if (month >= 9 && month <= 11) return 'autumn'
-  return 'winter'
-}
-
 // 二十四节气配置
 export const SOLAR_TERMS = [
   { key: 'lichun',     name: '立春',  month: 2,  day: 4,  color: '#86efac', desc: '东风解冻，蛰虫始振' },
@@ -158,7 +150,8 @@ export const useBlogStore = defineStore('blog', () => {
   const searchQuery = ref<string>('')
   const heatmapMode = ref<HeatmapMode>('season')
   const currentSolarTerm = ref<SolarTermKey>(getDefaultSolarTerm())
-  const currentSeason = ref<'spring' | 'summer' | 'autumn' | 'winter'>(getDefaultSeason())
+  // 固定使用夏季配色，不再随四季变化
+  const currentSeason = ref<'spring' | 'summer' | 'autumn' | 'winter'>('summer')
   const articleLoading = ref(false)
   const heatMapData = ref<HeatMapVO[]>([])
   const heatMapLoading = ref(false)
