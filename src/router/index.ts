@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { trackPageview } from '@/lib/analytics'
 
 // 定义路由配置
 const routes = [
@@ -51,6 +52,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   document.title = (to.meta.title as string) || '马业坤'
   next()
+})
+
+// 路由切换上报 PV（首次进入由 hm.js 自动统计，避免重复上报）
+let isFirstNavigation = true
+router.afterEach((to) => {
+  if (isFirstNavigation) {
+    isFirstNavigation = false
+    return
+  }
+  trackPageview(to.fullPath)
 })
 
 export default router
