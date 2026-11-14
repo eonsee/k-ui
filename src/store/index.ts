@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Article, Work, Profile, Category } from '@/types'
-import { articles as mockArticles, works, profile, categories } from '@/mock/data'
+import { articles as mockArticles, profile, categories } from '@/mock/data'
 import { articleApi, type ArticleVO, type HeatMapVO } from '@/api/article'
 import { profileApi, type ProfileVO } from '@/api/profile'
 import { skillApi, type SkillVO } from '@/api/skill'
@@ -142,7 +142,8 @@ function voToWork(vo: WorkVO, categoryMap: Map<number, string>): Work {
 export const useBlogStore = defineStore('blog', () => {
   // 文章：优先使用 API 数据，失败时 fallback 到 mock
   const allArticles = ref<Article[]>(mockArticles)
-  const allWorks = ref<Work[]>(works)
+  // 作品：只使用接口数据，不再用静态数据兜底；加载中由页面展示骨架屏
+  const allWorks = ref<Work[]>([])
   const profileData = ref<Profile>(profile)
   // 原始分类数据（从后端拉取，不含"全部"）
   const rawArticleCategories = ref<Category[]>(categories.filter(c => c.name !== '全部'))
@@ -155,6 +156,7 @@ export const useBlogStore = defineStore('blog', () => {
   // 固定使用夏季配色，不再随四季变化
   const currentSeason = ref<'spring' | 'summer' | 'autumn' | 'winter'>('summer')
   const articleLoading = ref(false)
+  const workLoading = ref(false)
   const heatMapData = ref<HeatMapVO[]>([])
   const heatMapLoading = ref(false)
   const growthTimelineData = ref<GrowthTimelineVO[]>([])
@@ -270,6 +272,7 @@ export const useBlogStore = defineStore('blog', () => {
 
   // 从后端拉取作品列表
   const fetchWorks = async (pageNum = 1, pageSize = 50) => {
+    workLoading.value = true
     try {
       const result = await workApi.queryPage({ pageNum, pageSize, searchCount: true })
       if (result && result.list && result.list.length > 0) {
@@ -277,7 +280,9 @@ export const useBlogStore = defineStore('blog', () => {
         allWorks.value = result.list.map(vo => voToWork(vo, categoryMap))
       }
     } catch (e) {
-      console.warn('[Store] 作品接口请求失败，使用本地数据', e)
+      console.warn('[Store] 作品接口请求失败，保持为空并结束骨架屏', e)
+    } finally {
+      workLoading.value = false
     }
   }
 
@@ -396,6 +401,7 @@ export const useBlogStore = defineStore('blog', () => {
     heatmapMode,
     currentSolarTerm,
     articleLoading,
+    workLoading,
     heatMapData,
     heatMapLoading,
     growthTimelineData,

@@ -37,6 +37,17 @@
                   </a>
                 </div>
 
+                <!-- 电子简历：文件放在 public/resume.pdf，点击新窗口打开 -->
+                <a
+                  class="resume-link"
+                  :href="RESUME_FILE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileText :size="15" />
+                  <span>电子简历 (PDF)</span>
+                </a>
+
                 <div class="social-links">
                   <a v-if="profile.social.github" :href="profile.social.github" target="_blank" class="social-link" title="GitHub">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -238,9 +249,12 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { MapPin, Linkedin, Mail, Plus, Info } from 'lucide-vue-next'
+import { MapPin, Linkedin, Mail, Plus, Info, FileText } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
 import myAvatar from '@/assets/my.jpg'
+
+// 电子简历文件位置：public/resume.pdf（替换该文件即可更新简历）
+const RESUME_FILE = '/resume.pdf'
 
 const blogStore = useBlogStore()
 const profile = computed(() => blogStore.profileData)
@@ -884,7 +898,43 @@ const guangxiSpots = [
   color: #fff;
 }
 
-/* Guangxi Travel Section (sidebar) */
+/* 电子简历入口：参考 clckkkkk.site 的胶囊小按钮 */
+.resume-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 14px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.resume-link svg {
+  flex-shrink: 0;
+}
+
+.resume-link:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.resume-link:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+}
+
 .travel-section {
   position: relative;
   z-index: 1;

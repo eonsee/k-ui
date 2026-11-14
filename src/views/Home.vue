@@ -58,26 +58,7 @@
           </div>
         </div>
         <div class="hero-visual animate-fade-in" style="animation-delay: 0.4s">
-          <div class="works-marquee" aria-label="产品轮播">
-            <div
-              v-for="copy in 2"
-              :key="copy"
-              class="works-marquee-track"
-              :aria-hidden="copy > 1"
-            >
-              <a
-                v-for="(work, index) in marqueeWorks"
-                :key="`${copy}-${work.id}-${index}`"
-                :href="work.link || '/works'"
-                :target="work.link ? '_blank' : undefined"
-                :rel="work.link ? 'noopener noreferrer' : undefined"
-                class="works-marquee-item"
-                :title="work.title"
-              >
-                <img :src="work.cover" :alt="work.title" loading="lazy" />
-              </a>
-            </div>
-          </div>
+          <WorksShowcase :works="works" :loading="worksLoading" />
         </div>
       </div>
       <div class="scroll-indicator">
@@ -143,14 +124,22 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowRight, ArrowUpRight, ChevronDown, Clock, Eye } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
+import WorksShowcase from '@/components/home/WorksShowcase.vue'
 
 const blogStore = useBlogStore()
 
+// 作品接口返回前，右侧轮播区域显示骨架，不使用静态数据
+const worksLoading = ref(true)
+
 // 首页加载时先拉分类，再拉文章和作品
 onMounted(async () => {
-  await Promise.all([blogStore.fetchCategories(1), blogStore.fetchCategories(2)])
-  blogStore.fetchArticles()
-  blogStore.fetchWorks()
+  try {
+    await Promise.all([blogStore.fetchCategories(1), blogStore.fetchCategories(2)])
+    blogStore.fetchArticles()
+    await blogStore.fetchWorks()
+  } finally {
+    worksLoading.value = false
+  }
 })
 
 // ============ 首页姓名打字机效果（循环敲入 / 删除） ============
@@ -212,14 +201,12 @@ onUnmounted(() => {
 const heroStats = computed(() => [
   { value: blogStore.allArticles.filter(article => article.isRecommend === 1).length, label: '精华帖子' },
   { value: blogStore.allArticles.length, label: '博客文章' },
-  { value: blogStore.allWorks.length, label: '项目' },
+  // 作品接口未返回时用占位符，避免先显示 0 再跳变
+  { value: worksLoading.value && blogStore.allWorks.length === 0 ? '—' : blogStore.allWorks.length, label: '项目' },
 ])
 
 const profile = computed(() => blogStore.profileData)
 const works = computed(() => blogStore.allWorks)
-
-// 轮播使用的作品封面
-const marqueeWorks = computed(() => works.value.filter(work => work.cover))
 
 // 首页文章列表：按发布时间倒序取前 6 篇
 const homepageArticles = computed(() =>
@@ -727,73 +714,6 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* 产品轮播（参考 chendahuang.com） */
-.works-marquee {
-  --marquee-gap: 32px;
-  --marquee-duration: 20s;
-  display: flex;
-  align-items: center;
-  gap: var(--marquee-gap);
-  width: 100%;
-  overflow: hidden;
-  padding: 16px 0;
-  /* 两侧渐隐：不用背景色遮盖，避免在非纯色 Hero 上出现白色块 */
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 33.333%, #000 66.667%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 33.333%, #000 66.667%, transparent 100%);
-}
-
-.works-marquee-track {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: var(--marquee-gap);
-  min-width: max-content;
-  animation: works-marquee var(--marquee-duration) linear infinite;
-}
-
-.works-marquee:hover .works-marquee-track {
-  animation-play-state: paused;
-}
-
-.works-marquee-item {
-  flex-shrink: 0;
-  width: 220px;
-  height: 220px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transform: rotate(-2deg);
-  transition: transform 0.3s ease;
-}
-
-.works-marquee-item:nth-child(even) {
-  transform: rotate(2deg);
-}
-
-.works-marquee-item:hover {
-  transform: rotate(0deg) scale(1.04);
-}
-
-.works-marquee-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-@keyframes works-marquee {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(calc(-100% - var(--marquee-gap)), 0, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .works-marquee-track {
-    animation: none;
-  }
-}
-
 .scroll-indicator {
   position: absolute;
   bottom: 32px;
@@ -1026,11 +946,6 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
   .hero-avatar-wrapper {
     width: 96px;
     height: 96px;
-  }
-
-  .works-marquee-item {
-    width: 180px;
-    height: 180px;
   }
 
   .article-list-section {
