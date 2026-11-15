@@ -1,8 +1,5 @@
 <template>
   <div class="activity-heatmap">
-    <div class="heatmap-header">
-      <h3 class="heatmap-title">文章动态</h3>
-    </div>
     <div class="heatmap-wrapper">
       <!-- 热力图主体 -->
       <div class="heatmap-main">
@@ -54,16 +51,6 @@
         <span class="legend-label">3</span>
         <div class="legend-item" :class="getLevelClass(4)"></div>
         <span class="legend-label">≥4</span>
-      </div>
-      <div class="heatmap-stats">
-        <div class="stat-item">
-          <span class="stat-value">{{ totalArticles }}</span>
-          <span class="stat-label">篇文章</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ activeDays }}</span>
-          <span class="stat-label">天活跃</span>
-        </div>
       </div>
     </div>
   </div>
@@ -120,27 +107,33 @@ const getSolarBaseColor = (opacity: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`
 }
 
-// 计算起始日期的偏移量（用于对齐周天）
-const getStartOffset = (): number => {
-  const today = new Date()
-  const startDate = new Date(today)
-  startDate.setDate(startDate.getDate() - 364)
-  const dayOfWeek = startDate.getDay()
+const props = withDefaults(defineProps<{ weeks?: number }>(), { weeks: 53 })
+
+const dayCount = computed(() => Math.max(7, Math.round(props.weeks) * 7))
+
+// 展示范围：从今天往前推 N 周（含今天）
+const rangeStart = computed(() => {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() - (dayCount.value - 1))
+  return date
+})
+
+// 起始日期需要空出的格子数（周一为一周的第一天）
+const startOffset = computed(() => {
+  const dayOfWeek = rangeStart.value.getDay()
   return dayOfWeek === 0 ? 6 : dayOfWeek - 1
-}
+})
 
-const startOffset = getStartOffset()
-
-// 生成月份标签
-const generateMonthLabels = (): string[] => {
+// 按月份变化生成标签
+const monthLabels = computed(() => {
   const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-  const today = new Date()
   const labels: string[] = []
   let lastMonth = -1
 
-  for (let i = 364; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
+  for (let i = 0; i < dayCount.value; i++) {
+    const date = new Date(rangeStart.value)
+    date.setDate(rangeStart.value.getDate() + i)
     const month = date.getMonth()
     if (month !== lastMonth) {
       labels.push(months[month])
@@ -148,22 +141,19 @@ const generateMonthLabels = (): string[] => {
     }
   }
   return labels
-}
+})
 
-const monthLabels = generateMonthLabels()
-
-// 将后端热力图数据填充到 365 天网格中
+// 将后端热力图数据填充到当前展示范围的网格中
 const activityData = computed<ActivityDay[]>(() => {
   const data: ActivityDay[] = []
-  const today = new Date()
   const heatMapMap = new Map<string, number>()
   blogStore.heatMapData.forEach((item) => {
     heatMapMap.set(item.date, item.count)
   })
 
-  for (let i = 364; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
+  for (let i = 0; i < dayCount.value; i++) {
+    const date = new Date(rangeStart.value)
+    date.setDate(rangeStart.value.getDate() + i)
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
@@ -173,14 +163,6 @@ const activityData = computed<ActivityDay[]>(() => {
   }
 
   return data
-})
-
-const totalArticles = computed(() => {
-  return activityData.value.reduce((sum, day) => sum + day.count, 0)
-})
-
-const activeDays = computed(() => {
-  return activityData.value.filter(day => day.count > 0).length
 })
 
 const getLevelClass = (count: number): string => {
@@ -204,23 +186,6 @@ onMounted(() => {
   background: var(--bg-secondary);
   border-radius: var(--radius-xl);
   overflow: hidden;
-}
-
-.heatmap-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.heatmap-title {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
 }
 
 .mode-switch {
@@ -301,9 +266,9 @@ onMounted(() => {
 
 .month-labels {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   margin-bottom: 4px;
-  margin-left: 32px;
+  margin-left: 28px;
   font-size: 0.625rem;
   color: var(--text-tertiary);
   min-width: 0;
@@ -318,7 +283,7 @@ onMounted(() => {
 .weekday-labels {
   display: grid;
   grid-template-rows: repeat(7, 1fr);
-  gap: 2px;
+  gap: 3px;
   font-size: 0.625rem;
   color: var(--text-tertiary);
   align-items: center;
@@ -336,7 +301,7 @@ onMounted(() => {
   grid-template-rows: repeat(7, 1fr);
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
-  gap: 2px;
+  gap: 3px;
 }
 
 .heatmap-day {
@@ -423,7 +388,7 @@ onMounted(() => {
 
 .heatmap-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
@@ -446,39 +411,9 @@ onMounted(() => {
   border-radius: 2px;
 }
 
-.heatmap-stats {
-  display: flex;
-  gap: 20px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.stat-value {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-}
-
 @media (max-width: 768px) {
   .activity-heatmap {
     padding: 16px;
-  }
-
-  .heatmap-grid {
-    grid-template-columns: repeat(26, 1fr);
-  }
-
-  .heatmap-day:nth-child(n+183) {
-    display: none;
   }
 
   .weekday-labels {

@@ -1,28 +1,43 @@
 <template>
   <!-- Article Found -->
   <div class="article-detail-page" v-if="article">
+    <!-- 置顶操作栏：滚动时吸附在网站头部下方 -->
+    <div class="article-topbar" :class="{ 'is-stuck': topbarStuck }">
+      <div class="container">
+        <button class="article-back" type="button" @click="goBack">
+          <ArrowLeft :size="16" />
+          返回
+        </button>
+
+        <div class="article-header-actions">
+          <div class="author-info">
+            <img :src="myAvatar" :alt="profile.name" class="author-avatar" />
+            <div class="author-details">
+              <div class="author-name">{{ profile.name }}</div>
+              <div class="author-title">发布日期 {{ article.createdAt }}</div>
+            </div>
+          </div>
+
+          <button class="action-btn" type="button" aria-label="分享" title="分享" @click="shareArticle">
+            <Share2 :size="16" />
+          </button>
+        </div>
+      </div>
+    </div>
+
     <article class="article-container">
       <!-- Article Header -->
       <header class="article-header">
-        <div class="container">
-          <div class="article-header-top">
-            <button class="article-back" type="button" @click="goBack">
-              <ArrowLeft :size="16" />
-              返回
-            </button>
-          </div>
-          <div class="article-meta">
-            <span class="category">{{ article.category }}</span>
-            <span class="divider">·</span>
-            <span class="date">{{ article.createdAt }}</span>
-            <span class="divider">·</span>
-            <span class="read-time">{{ article.readTime }} 分钟阅读</span>
-          </div>
+        <div class="article-header-content">
           <h1 class="article-title">{{ article.title }}</h1>
-          <p class="article-summary">{{ article.summary }}</p>
-          <div class="article-tags">
+          <p v-if="showSummary" class="article-summary">{{ article.summary }}</p>
+          <div v-if="article.tags.length" class="article-tags">
             <span v-for="tag in article.tags" :key="tag" class="tag">{{ tag }}</span>
           </div>
+
+          <p class="article-copyright">
+            本站内容均为原创首发，未经许可，不允许转载。
+          </p>
         </div>
       </header>
 
@@ -33,66 +48,40 @@
             <div class="article-main">
               <div class="article-content" v-html="renderedContent"></div>
 
-              <!-- 作者信息 + 分享 + 版权声明 -->
-              <div class="article-end">
-                <div class="author-info">
-                  <img :src="myAvatar" :alt="profile.name" class="author-avatar" />
-                  <div class="author-details">
-                    <div class="author-name">{{ profile.name }}</div>
-                    <div class="author-title">{{ profile.title }}</div>
-                  </div>
-                </div>
+              <!-- 上/下一篇：作为正文的一部分，不再单独占一个区域 -->
+              <nav v-if="prevArticle || nextArticle" class="article-nav" aria-label="文章导航">
+                <router-link
+                  v-if="prevArticle"
+                  :to="`/article/${prevArticle.id}`"
+                  class="article-nav-link prev"
+                >
+                  <span class="article-nav-label">
+                    <ChevronLeft :size="14" />
+                    上一篇
+                  </span>
+                  <span class="article-nav-title">{{ prevArticle.title }}</span>
+                </router-link>
+                <span v-else class="article-nav-empty" aria-hidden="true"></span>
 
-                <button class="action-btn" @click="shareArticle">
-                  <Share2 :size="16" />
-                  分享
-                </button>
-
-                <p class="copyright-text">
-                  本站内容均为原创首发，未经许可，不允许转载。
-                </p>
-              </div>
+                <router-link
+                  v-if="nextArticle"
+                  :to="`/article/${nextArticle.id}`"
+                  class="article-nav-link next"
+                >
+                  <span class="article-nav-label">
+                    下一篇
+                    <ChevronRight :size="14" />
+                  </span>
+                  <span class="article-nav-title">{{ nextArticle.title }}</span>
+                </router-link>
+                <span v-else class="article-nav-empty" aria-hidden="true"></span>
+              </nav>
             </div>
           </div>
         </div>
       </div>
 
     </article>
-
-    <!-- Article Navigation -->
-    <section class="article-navigation" v-if="prevArticle || nextArticle">
-      <div class="container">
-        <nav class="article-nav" aria-label="文章导航">
-          <router-link
-            v-if="prevArticle"
-            :to="`/article/${prevArticle.id}`"
-            class="article-nav-link prev"
-          >
-            <span class="article-nav-label">
-              <ChevronLeft :size="14" />
-              上一篇
-            </span>
-            <span class="article-nav-title">{{ prevArticle.title }}</span>
-          </router-link>
-          <span v-else class="article-nav-empty" aria-hidden="true"></span>
-
-          <span class="article-nav-divider" aria-hidden="true"></span>
-
-          <router-link
-            v-if="nextArticle"
-            :to="`/article/${nextArticle.id}`"
-            class="article-nav-link next"
-          >
-            <span class="article-nav-label">
-              下一篇
-              <ChevronRight :size="14" />
-            </span>
-            <span class="article-nav-title">{{ nextArticle.title }}</span>
-          </router-link>
-          <span v-else class="article-nav-empty" aria-hidden="true"></span>
-        </nav>
-      </div>
-    </section>
   </div>
 
   <!-- Loading -->
@@ -118,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Share2, FileQuestion, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
@@ -163,8 +152,23 @@ const loadArticle = async (id: string) => {
   }
 }
 
+const topbarStuck = ref(false)
+
+const handleScroll = () => {
+  topbarStuck.value = window.scrollY > 8
+}
+
 onMounted(() => {
+  // 文章页让固定站点头部与吸顶操作栏连成一体，去掉中间的分割线
+  document.documentElement.classList.add('article-page')
   loadArticle(route.params.id as string)
+  handleScroll()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  document.documentElement.classList.remove('article-page')
+  window.removeEventListener('scroll', handleScroll)
 })
 
 // 路由变化时重新加载文章并滚动到顶部
@@ -238,9 +242,28 @@ md.renderer.rules.heading_open = function (tokens, idx) {
   }
 }
 
+// 摘要与标题重复时不再展示
+const showSummary = computed(() => {
+  const current = article.value
+  if (!current) return false
+  const summary = (current.summary || '').trim()
+  const title = (current.title || '').trim()
+  return summary.length > 0 && summary !== title
+})
+
+// 正文开头常重复一遍标题，渲染前去掉这行 H1
+const contentBody = computed(() => {
+  const current = article.value
+  if (!current) return ''
+  const title = (current.title || '').trim()
+  return current.content.replace(/^\s*#\s+(.+?)\s*(?:\r?\n|$)/, (match, heading) => {
+    return title && String(heading).trim() === title ? '' : match
+  })
+})
+
 const renderedContent = computed(() => {
   if (!article.value) return ''
-  return md.render(article.value.content)
+  return md.render(contentBody.value)
 })
 
 const shareArticle = () => {
@@ -259,32 +282,135 @@ const shareArticle = () => {
 
 <style scoped>
 .article-detail-page {
-  padding-bottom: 80px;
+  padding-bottom: 0;
 }
 
-.article-header {
-  padding: 24px 0 40px;
-  text-align: center;
-  background: var(--bg-secondary);
+/* 文章页隐藏站点头部底部分割线，让吸顶栏与菜单栏连成一体 */
+:global(html.article-page .app-header),
+:global(html.article-page .app-header.header-scrolled) {
+  border-bottom-color: transparent;
 }
 
-.article-header-top {
+/* 顶部操作栏：只给左右两块内容做悬浮胶囊，中间不铺背景 */
+.article-topbar {
+  position: sticky;
+  top: 64px;
+  z-index: 900;
+  height: 64px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.article-topbar .container {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 标题区与正文同宽 */
+.article-header {
+  width: calc(100% - 48px);
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 48px;
+  text-align: center;
+}
+
+.article-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 5px 8px 5px 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  pointer-events: auto;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article-topbar.is-stuck .article-header-actions {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme='dark'] .article-topbar.is-stuck .article-header-actions {
+  background: rgba(0, 0, 0, 0.88);
+  border-color: var(--border-color);
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.author-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-details {
+  text-align: left;
+}
+
+.author-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.author-title {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
 .article-back {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-left: -10px;
-  padding: 6px 10px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   font-size: 0.8125rem;
+  line-height: 1;
   color: var(--text-tertiary);
+  pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.article-topbar.is-stuck .article-back {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme='dark'] .article-topbar.is-stuck .article-back {
+  background: rgba(0, 0, 0, 0.88);
+  border-color: var(--border-color);
+}
+
+.article-back svg,
+.action-btn svg {
+  display: block;
+  flex: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -294,37 +420,22 @@ const shareArticle = () => {
   }
 }
 
-.article-meta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.875rem;
-  color: var(--text-tertiary);
-  margin-bottom: 16px;
-}
-
-.divider {
-  color: var(--border-color);
-}
-
-.category {
-  color: var(--primary-color);
-  font-weight: 500;
+.article-header-content {
+  width: 100%;
 }
 
 .article-title {
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1.3;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto 16px;
 }
 
 .article-summary {
   font-size: 1.125rem;
   color: var(--text-secondary);
-  max-width: 600px;
+  max-width: 820px;
   margin: 0 auto 24px;
   line-height: 1.6;
 }
@@ -338,14 +449,14 @@ const shareArticle = () => {
 
 .tag {
   padding: 6px 14px;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border-radius: var(--radius-full);
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
 .article-content-wrapper {
-  padding: 40px 0 56px;
+  padding: 40px 0 24px;
 }
 
 .article-layout {
@@ -353,47 +464,48 @@ const shareArticle = () => {
 }
 
 .article-main {
-  max-width: 720px;
-  margin: 0 auto;
+  width: 100%;
   min-width: 0;
 }
 
 .article-content {
-  max-width: 720px;
+  width: 100%;
   min-width: 0;
+  font-size: 0.9375rem;
   overflow-wrap: break-word;
 }
 
-/* 正文结束栏：作者 + 分享 + 版权声明 */
-.article-end {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color);
-}
-
-.copyright-text {
-  margin: 0 0 0 auto;
-  padding: 8px 12px;
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+/* 正文第一个元素不再叠加顶部外边距，避免与头部之间出现大空隙 */
+.article-content :deep(> :first-child) {
+  margin-top: 0;
 }
 
 .article-content :deep(h1),
 .article-content :deep(h2),
 .article-content :deep(h3),
 .article-content :deep(h4) {
-  margin-top: 32px;
-  margin-bottom: 16px;
+  margin-top: 30px;
+  margin-bottom: 14px;
+}
+
+.article-content :deep(h1) {
+  font-size: 2rem;
+}
+
+.article-content :deep(h2) {
+  font-size: 1.5rem;
+}
+
+.article-content :deep(h3) {
+  font-size: 1.25rem;
+}
+
+.article-content :deep(h4) {
+  font-size: 1.0625rem;
 }
 
 .article-content :deep(p) {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   line-height: 1.8;
 }
 
@@ -518,59 +630,33 @@ const shareArticle = () => {
   object-fit: contain;
 }
 
-.author-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.author-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.author-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.author-title {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-}
-
 .action-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-full);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .action-btn:hover {
-  background: var(--bg-tertiary);
   color: var(--text-primary);
+  background: var(--bg-tertiary);
 }
 
-/* Article Navigation：紧凑的上/下一篇 */
-.article-navigation {
-  padding: 24px 0;
-  border-top: 1px solid var(--border-color);
-}
-
+/* Article Navigation：作为正文末尾的一部分 */
 .article-nav {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 24px;
+  margin-top: 32px;
 }
 
 .article-nav-link {
@@ -604,9 +690,12 @@ const shareArticle = () => {
   transition: color 0.2s ease;
 }
 
-.article-nav-divider {
-  width: 1px;
-  background: var(--border-color);
+.article-copyright {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  color: var(--text-tertiary);
 }
 
 .article-nav-link.next {
@@ -676,37 +765,58 @@ const shareArticle = () => {
     font-size: 1.75rem;
   }
 
-  .article-end {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
+  .article-topbar .container {
+    gap: 10px;
   }
 
-  .copyright-text {
-    margin-left: 0;
+  .article-header {
+    width: calc(100% - 32px);
+    padding: 28px 20px;
   }
 
-  .article-navigation {
-    padding: 20px 0;
+  .author-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .author-name {
+    font-size: 0.8125rem;
+  }
+
+  .author-title {
+    font-size: 0.625rem;
   }
 
   .article-nav {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
   }
 
-  .article-nav-divider {
-    width: 100%;
-    height: 1px;
+  .article-nav-empty {
+    display: none;
+  }
+
+  .article-nav-link {
+    padding: 0;
+  }
+
+  .article-nav-link.prev {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .article-nav-link.next {
-    align-items: flex-start;
-    text-align: left;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .article-copyright {
+    margin-top: 16px;
   }
 
   .article-nav-title {
     white-space: normal;
+    font-size: 0.875rem;
   }
 }
 </style>

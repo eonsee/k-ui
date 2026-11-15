@@ -110,9 +110,10 @@ const showSkeleton = computed(() => Boolean(props.loading) && usableWorks.value.
 
 const readPreference = () => {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== '0'
+    // 默认关闭六宫格，只有用户手动开启过才启用
+    return localStorage.getItem(STORAGE_KEY) === '1'
   } catch {
-    return true
+    return false
   }
 }
 

@@ -1,128 +1,115 @@
 <template>
-  <button
-    type="button"
-    class="wooden-fish-card"
-    aria-label="敲木鱼，功德加一"
-    @click="knock"
-  >
-    <span class="merit-panel">
-      <span class="merit-label">功德</span>
-      <span ref="countRef" class="merit-count" aria-live="polite">{{ merit }}</span>
-    </span>
+  <section class="wooden-fish" aria-label="电子木鱼">
+    <h3 class="wf-title">电子木鱼</h3>
 
-    <span ref="fishRef" class="fish-stage">
-      <span class="fish">
-        <svg class="fish-svg" viewBox="0 0 320 240" aria-hidden="true">
-          <defs>
-            <linearGradient id="wfBody" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#f9dfae" />
-              <stop offset="45%" stop-color="#e3ae6c" />
-              <stop offset="100%" stop-color="#b9783a" />
-            </linearGradient>
-            <clipPath id="wfClip">
-              <path
-                d="M30 156 C36 112 74 70 130 50 C196 26 268 48 296 104 C316 144 302 184 262 204 C218 226 156 224 108 206 C72 192 44 178 30 156 Z"
-              />
-            </clipPath>
-          </defs>
+    <div class="wf-body">
+      <span ref="countRef" class="wf-count" aria-live="polite">{{ merit }}</span>
 
-          <!-- 阴影 -->
-          <ellipse cx="164" cy="216" rx="108" ry="14" fill="#5c3a1e" opacity="0.16" />
-
-          <!-- 木鱼主体 -->
-          <path
-            d="M30 156 C36 112 74 70 130 50 C196 26 268 48 296 104 C316 144 302 184 262 204 C218 226 156 224 108 206 C72 192 44 178 30 156 Z"
-            fill="url(#wfBody)"
-          />
-
-          <g clip-path="url(#wfClip)">
-            <!-- 顶部高光 -->
-            <ellipse
-              cx="116"
-              cy="90"
-              rx="66"
-              ry="30"
-              transform="rotate(-18 116 90)"
-              fill="#fff3d8"
-              opacity="0.38"
-            />
-            <ellipse
-              cx="244"
-              cy="180"
-              rx="44"
-              ry="16"
-              transform="rotate(-12 244 180)"
-              fill="#8a4f1f"
-              opacity="0.16"
-            />
-
-            <!-- 木纹 -->
-            <g
-              fill="none"
-              stroke="#a96833"
-              stroke-width="2"
-              stroke-linecap="round"
-              opacity="0.38"
-            >
-              <path d="M44 170 C86 150 112 118 124 78" />
-              <path d="M58 188 C108 168 140 134 152 84" />
-              <path d="M82 202 C138 184 180 152 196 106" />
-              <path d="M118 214 C180 202 226 174 244 134" />
-              <path d="M164 220 C220 212 258 192 278 160" />
-            </g>
-
-            <!-- 鱼口刻槽 -->
-            <path
-              d="M104 144 C150 126 214 108 272 102 C278 112 276 122 266 128 C208 140 150 152 112 160 C102 157 98 150 104 144 Z"
-              fill="#4a2a12"
-            />
-            <path
-              d="M112 160 C154 150 214 140 266 128"
-              stroke="#f7d7a1"
-              stroke-width="3"
-              stroke-linecap="round"
-              opacity="0.5"
-              fill="none"
-            />
-          </g>
-
-          <!-- 外轮廓 -->
-          <path
-            d="M30 156 C36 112 74 70 130 50 C196 26 268 48 296 104 C316 144 302 184 262 204 C218 226 156 224 108 206 C72 192 44 178 30 156 Z"
-            fill="none"
-            stroke="#7a4a22"
-            stroke-width="3.5"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </span>
-
-      <span
-        v-for="item in floaters"
-        :key="item.id"
-        class="merit-pop"
-        :style="{ left: item.left + '%' }"
+      <button
+        ref="fishRef"
+        type="button"
+        class="wf-fish"
+        aria-label="敲木鱼，功德加一"
+        @click="knock"
       >
-        +1 功德
-      </span>
-    </span>
+        <svg class="wf-svg" viewBox="0 0 247 197" aria-hidden="true">
+          <defs>
+            <mask :id="maskId">
+              <rect width="247" height="197" fill="#000" />
+              <path :d="FISH_PATH" fill="#fff" />
+              <circle cx="168" cy="111" r="27" fill="#000" />
+              <rect x="168" y="104" width="80" height="14" fill="#000" />
+            </mask>
+          </defs>
+          <path :d="FISH_PATH" fill="currentColor" :mask="`url(#${maskId})`" />
+        </svg>
 
-    <span class="tap-hint">敲一敲木鱼</span>
-  </button>
+        <span
+          v-for="item in floaters"
+          :key="item.id"
+          class="wf-floater"
+          :style="{ left: item.left + '%' }"
+        >
+          功德+1，佛祖保佑你
+        </span>
+      </button>
+
+      <div class="wf-footer">
+        <span class="wf-auto-label">自动敲</span>
+        <button
+          type="button"
+          role="switch"
+          class="wf-switch"
+          :class="{ on: auto }"
+          :aria-checked="auto"
+          aria-label="自动敲"
+          @click="toggleAuto"
+        >
+          <span class="wf-switch-thumb"></span>
+        </button>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const STORAGE_KEY = 'wooden-fish-merit'
+const KNOCK_INTERVAL = 700
+
+// 扁平木鱼剪影：一个圆润的鱼身，右侧用遮罩挖出圆孔 + 横向缝隙
+const FISH_PATH =
+  'M109.5 6.5C128 3.8 152 3.6 174 10.2C197 17 216 32 228 52C238 68.5 243.5 87 245 105C245.8 114 245.5 122 244 131C241.5 148 233 163 219 175C202 190 180 195.5 158 195.5C128 195.5 95 192.5 67 186C46 181 27 174.5 15 164C6 156 2 146 3 136C4 126 10 118 19 113C25.5 109.5 31.5 107 36 105.5C39 99 41 91.5 43.5 83C49.5 59 62 38 78 24C87 16 98 10 109.5 6.5Z'
+
+const maskId = `wf-mask-${Math.random().toString(36).slice(2, 8)}`
 
 const merit = ref(0)
+const auto = ref(false)
 const floaters = ref<{ id: number; left: number }[]>([])
 const fishRef = ref<HTMLElement | null>(null)
 const countRef = ref<HTMLElement | null>(null)
 
 let seed = 0
+let autoTimer: number | undefined
 let audioCtx: AudioContext | null = null
+let knockBuffer: AudioBuffer | null = null
+const floaterTimers = new Set<number>()
+
+// 预加载参考站的木鱼音频；顺手裁掉文件开头约 45ms 的静音，让敲击更跟手
+async function loadKnockSample() {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}audio/wooden-fish.mp3`)
+    if (!res.ok) return
+
+    const data = await res.arrayBuffer()
+    const offline = new OfflineAudioContext(1, 1, 44100)
+    const decoded = await offline.decodeAudioData(data)
+
+    const threshold = 0.01
+    const channel = decoded.getChannelData(0)
+    let start = 0
+    while (start < channel.length && Math.abs(channel[start]) < threshold) start++
+    start = Math.max(0, start - 64)
+
+    if (start === 0) {
+      knockBuffer = decoded
+      return
+    }
+
+    const trimmed = offline.createBuffer(
+      decoded.numberOfChannels,
+      decoded.length - start,
+      decoded.sampleRate
+    )
+    for (let ch = 0; ch < decoded.numberOfChannels; ch++) {
+      trimmed.copyToChannel(decoded.getChannelData(ch).subarray(start), ch)
+    }
+    knockBuffer = trimmed
+  } catch {
+    // 音频加载/解码失败时保留合成声兜底
+  }
+}
 
 onMounted(() => {
   try {
@@ -131,9 +118,21 @@ onMounted(() => {
   } catch {
     // 隐私模式等场景下 localStorage 不可用，使用 0 作为初始值
   }
+
+  void loadKnockSample()
 })
 
-// 用 Web Audio 合成木鱼声：低频木腔 + 短促敲击
+onUnmounted(() => {
+  stopAuto()
+  floaterTimers.forEach(timer => window.clearTimeout(timer))
+  floaterTimers.clear()
+  if (audioCtx) {
+    void audioCtx.close()
+    audioCtx = null
+  }
+})
+
+// 优先播放参考站的木鱼音频；加载/解码失败时回退到合成声
 function playKnock() {
   try {
     const AudioCtor =
@@ -144,52 +143,104 @@ function playKnock() {
     if (!audioCtx) audioCtx = new AudioCtor()
     if (audioCtx.state === 'suspended') void audioCtx.resume()
 
-    const now = audioCtx.currentTime
+    const ctx = audioCtx
 
-    const thump = audioCtx.createOscillator()
-    const thumpGain = audioCtx.createGain()
-    thump.type = 'sine'
-    thump.frequency.setValueAtTime(220, now)
-    thump.frequency.exponentialRampToValueAtTime(80, now + 0.12)
-    thumpGain.gain.setValueAtTime(0.22, now)
-    thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16)
-    thump.connect(thumpGain).connect(audioCtx.destination)
-    thump.start(now)
-    thump.stop(now + 0.17)
+    if (knockBuffer) {
+      const source = ctx.createBufferSource()
+      source.buffer = knockBuffer
+      const gain = ctx.createGain()
+      gain.gain.value = 0.9
+      source.connect(gain).connect(ctx.destination)
+      source.start()
+      return
+    }
 
-    const click = audioCtx.createOscillator()
-    const clickGain = audioCtx.createGain()
-    click.type = 'triangle'
-    click.frequency.setValueAtTime(1100, now)
-    click.frequency.exponentialRampToValueAtTime(420, now + 0.035)
-    clickGain.gain.setValueAtTime(0.08, now)
-    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05)
-    click.connect(clickGain).connect(audioCtx.destination)
-    click.start(now)
-    click.stop(now + 0.06)
+    playSynthKnock(ctx)
   } catch {
     // 浏览器不支持 Web Audio 时静默降级，不影响功德计数
   }
 }
 
+// 兜底合成声：约 640Hz 的木质共振，短促撞击 + 约 200ms 余响
+function playSynthKnock(ctx: AudioContext) {
+  const now = ctx.currentTime
+
+  const master = ctx.createGain()
+  // 每一击略微变化，连续自动敲时不会过于机械
+  master.gain.value = 0.9 * (0.94 + Math.random() * 0.12)
+  master.connect(ctx.destination)
+
+  const detune = 1 + (Math.random() - 0.5) * 0.03
+
+  const addMode = (freq: number, gain: number, decay: number) => {
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = freq * detune
+
+    const env = ctx.createGain()
+    env.gain.setValueAtTime(0, now)
+    env.gain.linearRampToValueAtTime(gain, now + 0.004)
+    env.gain.exponentialRampToValueAtTime(0.0004, now + decay)
+
+    osc.connect(env).connect(master)
+    osc.start(now)
+    osc.stop(now + decay + 0.02)
+  }
+
+  // 快速衰减的敲击主体
+  addMode(600, 0.18, 0.07)
+  addMode(640, 0.28, 0.06)
+  addMode(690, 0.12, 0.05)
+
+  // 长尾余响
+  addMode(570, 0.015, 0.45)
+  addMode(600, 0.025, 0.35)
+  addMode(640, 0.04, 0.4)
+  addMode(690, 0.015, 0.3)
+
+  // 木质撞击的瞬态噪声
+  const len = Math.floor(ctx.sampleRate * 0.025)
+  const buffer = ctx.createBuffer(1, len, ctx.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let i = 0; i < len; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3)
+  }
+
+  const noise = ctx.createBufferSource()
+  noise.buffer = buffer
+
+  const bandpass = ctx.createBiquadFilter()
+  bandpass.type = 'bandpass'
+  bandpass.frequency.value = 1000
+  bandpass.Q.value = 1
+
+  const noiseGain = ctx.createGain()
+  noiseGain.gain.value = 0.18
+
+  noise.connect(bandpass).connect(noiseGain).connect(master)
+  noise.start(now)
+}
+
+const reduceMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 function animateFish() {
   const el = fishRef.value
-  if (!el) return
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (!el || reduceMotion()) return
 
   el.animate(
     [
-      { transform: 'scale(0.965) translateY(4px) rotate(-1deg)' },
-      { transform: 'scale(1) translateY(0) rotate(0deg)' },
+      { transform: 'scale(0.94) translateY(3px)' },
+      { transform: 'scale(1) translateY(0)' },
     ],
-    { duration: 200, easing: 'ease-out' }
+    { duration: 180, easing: 'cubic-bezier(0.5, 0.35, 0.15, 1.4)' }
   )
 }
 
 function bumpCount() {
   const el = countRef.value
-  if (!el) return
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (!el || reduceMotion()) return
 
   el.animate(
     [
@@ -207,11 +258,15 @@ function knock() {
   animateFish()
   bumpCount()
 
-  const id = ++seed
-  floaters.value.push({ id, left: 56 + Math.random() * 22 })
-  window.setTimeout(() => {
-    floaters.value = floaters.value.filter(item => item.id !== id)
-  }, 1150)
+  if (!reduceMotion()) {
+    const id = ++seed
+    floaters.value.push({ id, left: 45 + Math.random() * 12 })
+    const timer = window.setTimeout(() => {
+      floaters.value = floaters.value.filter(item => item.id !== id)
+      floaterTimers.delete(timer)
+    }, 1000)
+    floaterTimers.add(timer)
+  }
 
   try {
     localStorage.setItem(STORAGE_KEY, String(merit.value))
@@ -219,173 +274,214 @@ function knock() {
     // 存储失败不影响本次点击
   }
 }
+
+function stopAuto() {
+  auto.value = false
+  if (autoTimer !== undefined) {
+    window.clearInterval(autoTimer)
+    autoTimer = undefined
+  }
+}
+
+function toggleAuto() {
+  if (auto.value) {
+    stopAuto()
+    return
+  }
+  auto.value = true
+  autoTimer = window.setInterval(knock, KNOCK_INTERVAL)
+}
 </script>
 
 <style scoped>
-.wooden-fish-card {
-  --wf-bg-top: #faf5ea;
-  --wf-bg-bottom: #efe4d0;
-  --wf-ink: #2a2520;
-  --wf-ink-soft: #6b5f52;
-  --wf-gold: #b89b5e;
-  --wf-gold-deep: #8c6a31;
-  --mallet-cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'><path d='M31 6 L16 24' stroke='%238a562a' stroke-width='6' stroke-linecap='round'/><path d='M32.5 7.5 L17.5 25.5' stroke='%23f6d4a7' stroke-width='1.4' stroke-linecap='round' opacity='0.7'/><ellipse cx='13' cy='31' rx='9' ry='7.5' fill='%23c88a4c' stroke='%23663f1d' stroke-width='1.6'/><ellipse cx='11' cy='29' rx='2.8' ry='1.8' fill='%23fff0ca' opacity='0.7'/></svg>") 13 31, pointer;
-  position: relative;
+.wooden-fish {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
   width: 100%;
-  height: 100%;
-  min-height: 220px;
-  padding: 16px 24px 18px;
-  border: 1px solid rgba(92, 63, 33, 0.14);
+  padding: 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.85), transparent 58%),
-    linear-gradient(180deg, var(--wf-bg-top), var(--wf-bg-bottom));
-  color: var(--wf-ink);
-  font: inherit;
-  text-align: center;
-  cursor: var(--mallet-cursor);
-  overflow: visible;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: box-shadow var(--transition-fast);
 }
 
-.wooden-fish-card:hover {
-  box-shadow: 0 12px 30px rgba(92, 63, 33, 0.14);
+.wf-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--text-primary);
 }
 
-.wooden-fish-card:focus-visible {
-  outline: 2px solid var(--wf-gold);
-  outline-offset: 3px;
-}
-
-[data-theme='dark'] .wooden-fish-card {
-  --wf-bg-top: #2b241b;
-  --wf-bg-bottom: #1c1712;
-  --wf-ink: #f2e7d3;
-  --wf-ink-soft: #b7a68c;
-  --wf-gold: #d9b977;
-  --wf-gold-deep: #c39b55;
-  border-color: rgba(217, 185, 119, 0.18);
-  background:
-    radial-gradient(circle at 28% 18%, rgba(255, 236, 200, 0.08), transparent 58%),
-    linear-gradient(180deg, var(--wf-bg-top), var(--wf-bg-bottom));
-}
-
-[data-theme='dark'] .wooden-fish-card:hover {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-}
-
-.merit-panel {
+.wf-body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 14px;
+  padding: 8px 0 2px;
+}
+
+.wf-count {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 400;
   line-height: 1;
-}
-
-.merit-label {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  color: var(--wf-gold-deep);
-}
-
-.merit-count {
-  font-family: Georgia, "Songti SC", "STSong", "Times New Roman", serif;
-  font-size: clamp(32px, 4.6vw, 44px);
-  font-weight: 500;
-  color: var(--wf-ink);
-  line-height: 1.05;
+  color: #484c53;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 4px 14px rgba(184, 155, 94, 0.18);
 }
 
-.merit-panel::after {
-  content: "";
-  width: 64px;
-  height: 1px;
-  margin-top: 6px;
-  background: linear-gradient(90deg, transparent, rgba(140, 106, 49, 0.6), transparent);
-}
-
-.fish-stage {
+.wf-fish {
   position: relative;
   display: flex;
-  flex: 1;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 0;
-  cursor: var(--mallet-cursor);
+  width: 140px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #484c53;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.fish {
-  display: block;
-  width: min(58%, 168px);
-  filter: drop-shadow(0 12px 14px rgba(60, 40, 20, 0.18));
-  will-change: transform;
-}
-
-.fish-svg {
+.wf-svg {
   display: block;
   width: 100%;
   height: auto;
+  overflow: visible;
 }
 
-.merit-pop {
+.wf-fish:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 6px;
+  border-radius: 12px;
+}
+
+.wf-floater {
   position: absolute;
-  top: 38%;
-  font-family: Georgia, "Songti SC", "STSong", serif;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--wf-gold);
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-primary);
   white-space: nowrap;
   pointer-events: none;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-  animation: meritFloat 1.15s ease-out forwards;
+  animation: wf-float 1s ease-out forwards;
 }
 
-[data-theme='dark'] .merit-pop {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
-@keyframes meritFloat {
+@keyframes wf-float {
   0% {
     opacity: 0;
-    transform: translate(-6px, 6px) scale(0.75);
+    transform: translate(-50%, 6px);
   }
-  20% {
-    opacity: 1;
-    transform: translate(0, 0) scale(1);
+  15% {
+    opacity: 0.95;
   }
   100% {
     opacity: 0;
-    transform: translate(22px, -52px) scale(1);
+    transform: translate(-50%, -30px);
   }
 }
 
-.tap-hint {
-  display: block;
-  margin: 0;
-  font-family: Georgia, "Songti SC", "STSong", serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  color: var(--wf-ink-soft);
+.wf-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.wf-auto-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.wf-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.14);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wf-switch.on {
+  background: var(--primary-color);
+}
+
+.wf-switch:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+}
+
+.wf-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.wf-switch.on .wf-switch-thumb {
+  transform: translateX(18px);
+}
+
+/* 宽卡片改为横向排布：数字与木鱼并排，压缩卡片高度 */
+@container (min-width: 360px) {
+  .wf-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 4px 0 0;
+  }
+
+  .wf-count {
+    justify-self: center;
+  }
+
+  .wf-fish {
+    justify-self: center;
+  }
+
+  .wf-footer {
+    grid-column: 1 / -1;
+  }
+}
+
+[data-theme='dark'] .wooden-fish {
+  border-color: var(--border-color);
+}
+
+[data-theme='dark'] .wf-count,
+[data-theme='dark'] .wf-fish {
+  color: #c8c8c8;
+}
+
+[data-theme='dark'] .wf-switch {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme='dark'] .wf-switch.on {
+  background: var(--primary-color);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wooden-fish-card {
-    transition: none;
+  .wf-floater {
+    animation-duration: 0.01ms;
   }
 
-  .merit-pop {
-    animation-duration: 1ms;
+  .wf-switch,
+  .wf-switch-thumb {
+    transition: none;
   }
 }
 </style>
