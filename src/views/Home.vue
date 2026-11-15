@@ -1,17 +1,10 @@
 <template>
   <div class="home-page">
     <!-- Hero Section -->
-    <section ref="heroRef" class="hero-section">
+    <section class="hero-section">
       <div class="hero-bg">
         <div class="hero-gradient"></div>
-        <div class="hero-bubbles" :style="{ '--hero-rise': heroRise }">
-          <div
-            v-for="(bubble, index) in bubbleStyles"
-            :key="index"
-            class="bubble"
-            :style="bubble"
-          ></div>
-        </div>
+        <HeroBubbles />
       </div>
       <div class="container hero-content">
         <div
@@ -125,6 +118,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowRight, ArrowUpRight, ChevronDown, Clock, Eye } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
 import WorksShowcase from '@/components/home/WorksShowcase.vue'
+import HeroBubbles from '@/components/home/HeroBubbles.vue'
 
 const blogStore = useBlogStore()
 
@@ -337,62 +331,6 @@ onUnmounted(() => {
   if (cursorRaf) cancelAnimationFrame(cursorRaf)
 })
 
-const heroRef = ref<HTMLElement | null>(null)
-const heroRise = ref('105vh')
-let heroResizeObserver: ResizeObserver | null = null
-
-// 让气泡从底部升出整个 hero：移动端 hero 可能高于 100vh
-onMounted(() => {
-  const el = heroRef.value
-  if (!el || typeof ResizeObserver === 'undefined') return
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-  let measured = 0
-  heroResizeObserver = new ResizeObserver(() => {
-    const height = Math.ceil(el.offsetHeight + 40)
-    // 高度变化不大时不重设，避免动画中途跳动
-    if (Math.abs(height - measured) < 24) return
-    measured = height
-    heroRise.value = `${height}px`
-  })
-  heroResizeObserver.observe(el)
-})
-
-onUnmounted(() => {
-  heroResizeObserver?.disconnect()
-  heroResizeObserver = null
-})
-
-// 固定种子生成气泡参数：只在 setup 执行一次，
-// 避免打字机/接口数据更新触发重渲染时把气泡随机重置
-const seededRandom = (seed: number) => {
-  const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453
-  return value - Math.floor(value)
-}
-
-const getBubbleStyle = (index: number) => {
-  const rand = (offset: number) => seededRandom(index * 10 + offset)
-
-  // 小气泡居多，偶尔出现大气泡，更接近真实分布
-  const size = Math.pow(rand(1), 2) * 22 + 6
-  const left = rand(2) * 94 + 3
-  const delay = rand(3) * 5
-  const duration = rand(4) * 10 + 12
-  const drift = (rand(5) > 0.5 ? 1 : -1) * (rand(6) * 24 + 8)
-  const opacity = rand(7) * 0.3 + 0.35
-
-  return {
-    width: `${size}px`,
-    height: `${size}px`,
-    left: `${left}%`,
-    animationDelay: `${delay}s`,
-    animationDuration: `${duration}s`,
-    '--drift': `${drift.toFixed(1)}px`,
-    '--bubble-opacity': opacity.toFixed(2),
-  }
-}
-
-const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(index))
 </script>
 
 <style scoped>
@@ -421,81 +359,6 @@ const bubbleStyles = Array.from({ length: 30 }, (_, index) => getBubbleStyle(ind
   inset: 0;
   background: radial-gradient(ellipse at top right, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
               radial-gradient(ellipse at bottom left, rgba(37, 99, 235, 0.08) 0%, transparent 50%);
-}
-
-.hero-bubbles {
-  --hero-rise: 105vh;
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/* 海洋气泡 */
-.bubble {
-  position: absolute;
-  bottom: -30px;
-  border-radius: 50%;
-  background:
-    radial-gradient(ellipse 42% 28% at 32% 24%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 35%, transparent 100%),
-    radial-gradient(ellipse 30% 18% at 68% 78%, rgba(255, 255, 255, 0.45) 0%, transparent 100%),
-    radial-gradient(circle at 50% 50%, rgba(150, 195, 235, 0.02) 0%, rgba(150, 195, 235, 0.1) 55%, rgba(150, 195, 235, 0.26) 90%, rgba(255, 255, 255, 0.75) 100%);
-  border: 1px solid rgba(130, 175, 220, 0.45);
-  box-shadow:
-    inset -2px -3px 5px rgba(255, 255, 255, 0.4),
-    inset 2px 2px 6px rgba(140, 190, 235, 0.14),
-    0 1px 4px rgba(120, 170, 220, 0.1);
-  opacity: 0;
-  animation: bubble-rise linear infinite;
-  will-change: transform, opacity;
-}
-
-[data-theme='dark'] .bubble {
-  border-color: rgba(210, 230, 255, 0.3);
-  background:
-    radial-gradient(ellipse 42% 28% at 32% 24%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 35%, transparent 100%),
-    radial-gradient(ellipse 30% 18% at 68% 78%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
-    radial-gradient(circle at 50% 50%, rgba(150, 200, 255, 0.04) 0%, rgba(150, 200, 255, 0.1) 55%, rgba(150, 200, 255, 0.28) 90%, rgba(255, 255, 255, 0.7) 100%);
-  box-shadow:
-    inset -2px -3px 5px rgba(255, 255, 255, 0.25),
-    inset 2px 2px 6px rgba(150, 200, 255, 0.1),
-    0 1px 6px rgba(150, 200, 255, 0.12);
-}
-
-@keyframes bubble-rise {
-  0% {
-    transform: translate3d(0, 0, 0) scale(0.8);
-    opacity: 0;
-  }
-  6% {
-    opacity: var(--bubble-opacity, 0.4);
-  }
-  20% {
-    transform: translate3d(calc(var(--drift, 16px) * 0.45), calc(var(--hero-rise, 105vh) * -0.21), 0) scale(1.02);
-  }
-  36% {
-    transform: translate3d(calc(var(--drift, 16px) * -0.3), calc(var(--hero-rise, 105vh) * -0.36), 0) scale(0.97);
-  }
-  52% {
-    transform: translate3d(var(--drift, 16px), calc(var(--hero-rise, 105vh) * -0.51), 0) scale(1.04);
-  }
-  68% {
-    transform: translate3d(calc(var(--drift, 16px) * 0.35), calc(var(--hero-rise, 105vh) * -0.67), 0) scale(0.99);
-  }
-  84% {
-    opacity: var(--bubble-opacity, 0.4);
-  }
-  100% {
-    transform: translate3d(calc(var(--drift, 16px) * -0.45), calc(var(--hero-rise, 105vh) * -1), 0) scale(1.08);
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bubble {
-    animation: none;
-    opacity: 0;
-  }
 }
 
 .hero-content {
