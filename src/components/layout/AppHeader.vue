@@ -272,7 +272,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-/* 参考 lodop.fios.top 的图标按钮悬停样式 */
+/* 图标按钮悬停：与导航菜单项一致的圆形气泡 */
 .theme-toggle,
 .github-link,
 .mobile-menu-btn {
@@ -281,7 +281,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 9px;
+  border-radius: 50%;
   border: 1px solid transparent;
   color: var(--text-secondary);
   -webkit-tap-highlight-color: transparent;
@@ -292,10 +292,16 @@ onUnmounted(() => {
   .theme-toggle:hover,
   .github-link:hover,
   .mobile-menu-btn:hover {
-    background: var(--bg-tertiary);
+    background: rgba(15, 23, 42, 0.06);
     color: var(--text-primary);
-    border-color: var(--border-color);
+    border-color: transparent;
   }
+}
+
+[data-theme='dark'] .theme-toggle:hover,
+[data-theme='dark'] .github-link:hover,
+[data-theme='dark'] .mobile-menu-btn:hover {
+  background: rgba(248, 250, 252, 0.08);
 }
 
 /* 触摸设备：按下时给即时反馈，松手即恢复，不做残留 */
@@ -303,9 +309,15 @@ onUnmounted(() => {
   .theme-toggle:active,
   .github-link:active,
   .mobile-menu-btn:active {
-    background: var(--bg-tertiary);
+    background: rgba(15, 23, 42, 0.06);
     color: var(--text-primary);
-    border-color: var(--border-color);
+    border-color: transparent;
+  }
+
+  [data-theme='dark'] .theme-toggle:active,
+  [data-theme='dark'] .github-link:active,
+  [data-theme='dark'] .mobile-menu-btn:active {
+    background: rgba(248, 250, 252, 0.08);
   }
 }
 
