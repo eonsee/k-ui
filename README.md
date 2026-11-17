@@ -1,9 +1,12 @@
-# k-ui 个人博客前端
+# 
+<p style="text-align: center">k-ui 个人博客前端</p>
 
 > 全栈开发者 / 技术博主的个人博客前端。基于 **Vue 3 + TypeScript + Vite + Pinia** 构建，配套后端 API 服务 `api.mayekun.com`。
 
 🌐 在线地址：[https://mayekun.com](https://mayekun.com)
+
 💻 代码仓库：[https://github.com/eonsee/k-ui](https://github.com/eonsee/k-ui)
+
 🛠 技术栈：Vue 3 · TypeScript · Vite 5 · Pinia · Vue Router 4 · Axios · TailwindCSS
 
 <p align="center">
