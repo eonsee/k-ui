@@ -1,4 +1,3 @@
-# 
 <h2 align="center">k-ui 个人博客前端</h2>
 
 > 全栈开发者 / 技术博主的个人博客前端。基于 **Vue 3 + TypeScript + Vite + Pinia** 构建，配套后端 API 服务 `api.mayekun.com`。
