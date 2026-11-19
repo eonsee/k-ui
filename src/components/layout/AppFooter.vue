@@ -1,7 +1,7 @@
 <template>
   <footer class="app-footer">
     <div class="container footer-container">
-      <!-- 第一行：社交 -->
+      <!-- 左：社交 -->
       <div class="footer-social">
         <a
           href="https://github.com/eonsee"
@@ -11,7 +11,7 @@
           aria-label="GitHub"
           title="GitHub"
         >
-          <Github :size="18" />
+          <Github :size="15" />
         </a>
         <a
           href="https://gitee.com/mayekun"
@@ -26,29 +26,32 @@
           </svg>
         </a>
         <a href="mailto:info@mayekun.com" class="social-btn" aria-label="Email" title="Email">
-          <Mail :size="18" />
+          <Mail :size="15" />
         </a>
       </div>
 
-      <!-- 第二行：ICP 备案 -->
-      <div class="footer-icp">
-        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
-          <img src="/icp-logo.png" alt="备案图标" class="icp-logo" width="14" height="14" />
-          桂ICP备2024029466号-3
-        </a>
-      </div>
+      <!-- 中间：ICP 备案 -->
+      <a
+        href="https://beian.miit.gov.cn/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-icp"
+      >
+        <img src="/icp-logo.png" alt="备案图标" class="icp-logo" width="14" height="14" />
+        桂ICP备2024029466号-3
+      </a>
 
-      <!-- 第三行：版权信息 -->
+      <!-- 版权与站点统计 -->
       <p class="footer-meta">
-        © {{ currentYear }} 马业坤 版权所有
-        <span class="footer-separator">|</span>
+        <span>© {{ currentYear }} 马业坤</span>
+        <span class="footer-separator" aria-hidden="true">·</span>
         <span class="site-stat-inline">
-          <Activity :size="14" :stroke-width="1.8" aria-hidden="true" />
-          本站已健康运行 <strong>{{ runningDays }}</strong> 天
+          <Activity :size="12" :stroke-width="1.8" aria-hidden="true" />
+          已运行 <strong>{{ runningDays }}</strong> 天
         </span>
-        <span class="footer-separator">|</span>
+        <span class="footer-separator" aria-hidden="true">·</span>
         <span class="site-stat-inline">
-          <Eye :size="14" :stroke-width="1.8" aria-hidden="true" />
+          <Eye :size="12" :stroke-width="1.8" aria-hidden="true" />
           访问量 <strong>{{ visitCount.toLocaleString() }}</strong>
         </span>
       </p>
@@ -97,7 +100,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-color);
-  padding: 40px 0 28px;
+  padding: 14px 0;
 }
 
 [data-theme='dark'] .app-footer {
@@ -108,28 +111,28 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 8px;
   text-align: center;
 }
 
-/* 第一行：圆形社交按钮 */
+/* 圆形社交按钮 */
 .footer-social {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .social-svg {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
 }
 
 .social-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--bg-tertiary);
   border: 1px solid transparent;
@@ -155,18 +158,18 @@ onUnmounted(() => {
   }
 }
 
-/* 第二行：ICP */
-.footer-icp a {
+/* ICP 备案链接 */
+.footer-icp {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
   transition: color var(--transition-fast);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .footer-icp a:hover {
+  .footer-icp:hover {
     color: var(--primary-color);
   }
 }
@@ -176,15 +179,15 @@ onUnmounted(() => {
   height: 14px;
 }
 
-/* 第三行：版权与站点统计 */
+/* 版权与站点统计 */
 .footer-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px 8px;
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
 }
 
@@ -210,21 +213,22 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .app-footer {
-    padding: 32px 0 24px;
+    padding: 14px 0 16px;
   }
 
   .footer-container {
-    gap: 16px;
+    gap: 8px;
   }
 
   .social-btn {
-    width: 38px;
-    height: 38px;
+    width: 30px;
+    height: 30px;
   }
 
   .footer-meta {
-    gap: 6px;
-    font-size: 0.75rem;
+    justify-content: center;
+    gap: 4px 10px;
+    font-size: 0.6875rem;
   }
 
   .footer-separator {

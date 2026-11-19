@@ -1,147 +1,271 @@
 <template>
   <div class="works-page">
     <div class="container">
-      <!-- Category Filter：居中胶囊 + 弱化选中态 -->
-      <nav class="category-filter" aria-label="作品分类">
+      <!-- 移动端：保留改版前的分类 + 作品列表布局 -->
+      <WorksLegacyMobile v-if="isMobile" :loading="pageLoading" />
+
+      <template v-else>
+        <!-- Work Filter：以作品名称切换，居中胶囊 + 弱化选中态 -->
+      <nav ref="filterNav" v-if="works.length > 0" class="work-filter" aria-label="作品列表">
+        <span
+          class="work-tab-indicator"
+          :class="{ 'is-ready': indicatorReady }"
+          :style="indicatorStyle"
+          aria-hidden="true"
+        ></span>
         <button
-          v-for="category in categories"
-          :key="category.id"
-          class="category-tab"
-          :class="{ active: currentWorkCategory === category.name }"
-          @click="setWorkCategory(category.name)"
+          v-for="work in works"
+          :key="work.id"
+          :ref="el => setTabRef(work.id, el)"
+          class="work-tab"
+          :class="{ active: selectedWork?.id === work.id }"
+          :aria-pressed="selectedWork?.id === work.id"
+          :title="work.title"
+          @click="selectWork(work.id)"
         >
-          <span>{{ category.name }}</span>
-          <span v-if="!showSkeleton" class="category-count">{{ category.count }}</span>
+          {{ work.title }}
         </button>
       </nav>
 
       <!-- 加载骨架屏：接口未返回前展示，不使用静态数据 -->
       <div
         v-if="showSkeleton"
-        class="works-grid skeleton-grid"
+        class="work-panel skeleton-panel"
         aria-busy="true"
         aria-label="作品加载中"
       >
-        <div v-for="n in 6" :key="n" class="work-tile skeleton-tile">
-          <div class="skeleton-cover"></div>
-          <div class="tile-body">
-            <span class="skeleton-line skeleton-title"></span>
-            <span class="skeleton-line skeleton-desc"></span>
-            <span class="skeleton-line skeleton-desc skeleton-desc-short"></span>
-            <span class="skeleton-line skeleton-foot"></span>
-          </div>
+        <div class="skeleton-cover"></div>
+        <div class="panel-body">
+          <span class="skeleton-line skeleton-meta"></span>
+          <span class="skeleton-line skeleton-title"></span>
+          <span class="skeleton-line skeleton-desc"></span>
+          <span class="skeleton-line skeleton-desc skeleton-desc-short"></span>
+          <span class="skeleton-line skeleton-foot"></span>
         </div>
       </div>
 
-      <!-- Works Grid：三列作品卡片 -->
-      <div v-else-if="works.length > 0" class="works-grid">
-        <article
-          v-for="(work, index) in works"
-          :key="work.id"
-          class="work-tile"
-          :style="{ '--i': index }"
-        >
+      <!-- 当前作品：全宽长条卡片，点击上方作品名切换 -->
+      <div v-else-if="selectedWork" class="work-stage">
+        <Transition name="work-switch">
+          <article
+            :key="selectedWork.id"
+            class="work-panel"
+            :style="{ '--switch-dir': switchDir }"
+          >
           <!-- 封面：有外链时整块可点击 -->
           <a
-            class="tile-cover"
+            class="panel-cover"
             :class="{
-              'is-link': Boolean(work.link),
-              'is-loaded': loadedCovers.has(work.id),
-              'is-failed': failedCovers.has(work.id),
+              'is-link': Boolean(selectedWork.link),
+              'is-loaded': loadedCovers.has(selectedWork.id),
+              'is-failed': failedCovers.has(selectedWork.id),
             }"
-            :href="work.link || undefined"
-            :target="work.link ? '_blank' : undefined"
-            :rel="work.link ? 'noopener noreferrer' : undefined"
-            :aria-label="work.link ? `访问 ${work.title}` : undefined"
+            :href="selectedWork.link || undefined"
+            :target="selectedWork.link ? '_blank' : undefined"
+            :rel="selectedWork.link ? 'noopener noreferrer' : undefined"
+            :aria-label="selectedWork.link ? `访问 ${selectedWork.title}` : undefined"
           >
             <img
-              :src="work.cover"
-              :alt="work.title"
-              loading="lazy"
+              :src="selectedWork.cover"
+              :alt="selectedWork.title"
               decoding="async"
-              @load="onCoverLoad(work.id)"
-              @error="onCoverError(work.id)"
+              @load="onCoverLoad(selectedWork.id)"
+              @error="onCoverError(selectedWork.id)"
             />
           </a>
 
-          <div class="tile-body">
-            <h3 class="tile-title">
+          <div class="panel-body">
+            <div class="panel-meta">
+              <span v-if="selectedWork.category" class="panel-meta-category">{{ selectedWork.category }}</span>
+              <span v-if="selectedWork.category && selectedWork.createdAt" class="panel-meta-divider" aria-hidden="true">/</span>
+              <span v-if="selectedWork.createdAt" class="panel-meta-date">{{ formatDate(selectedWork.createdAt) }}</span>
+            </div>
+
+            <h3 class="panel-title">
               <a
-                v-if="work.link"
-                :href="work.link"
+                v-if="selectedWork.link"
+                :href="selectedWork.link"
                 target="_blank"
                 rel="noopener noreferrer"
-              >{{ work.title }}</a>
-              <template v-else>{{ work.title }}</template>
+              >{{ selectedWork.title }}</a>
+              <template v-else>{{ selectedWork.title }}</template>
             </h3>
 
-            <p v-if="work.description" class="tile-desc">{{ work.description }}</p>
+            <p v-if="selectedWork.description" class="panel-desc">{{ selectedWork.description }}</p>
 
-            <div v-if="work.tags.length" class="tile-tags">
-              <span v-for="tag in work.tags.slice(0, 3)" :key="tag" class="tile-tag">{{ tag }}</span>
+            <div v-if="selectedWork.tags.length" class="panel-tags">
+              <span v-for="tag in selectedWork.tags" :key="tag" class="panel-tag">{{ tag }}</span>
             </div>
 
-            <div class="tile-footer">
-              <div class="tile-meta">
-                <span v-if="work.category" class="tile-meta-category">{{ work.category }}</span>
-                <span v-if="work.category && work.createdAt" class="tile-meta-divider" aria-hidden="true">/</span>
-                <span v-if="work.createdAt" class="tile-meta-date">{{ formatDate(work.createdAt) }}</span>
-              </div>
-
-              <div v-if="work.github || work.link" class="tile-actions">
-                <a
-                  v-if="work.github"
-                  :href="work.github"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="tile-action"
-                >
-                  <Github :size="14" />
-                  <span>源码</span>
-                </a>
-                <a
-                  v-if="work.link"
-                  :href="work.link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="tile-action is-primary"
-                >
-                  <ArrowUpRight :size="14" />
-                  <span>访问</span>
-                </a>
-              </div>
+            <div v-if="selectedWork.github || selectedWork.link" class="panel-actions">
+              <a
+                v-if="selectedWork.github"
+                :href="selectedWork.github"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="panel-action"
+              >
+                <Github :size="15" />
+                <span>源码</span>
+              </a>
+              <a
+                v-if="selectedWork.link"
+                :href="selectedWork.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="panel-action is-primary"
+              >
+                <ArrowUpRight :size="15" />
+                <span>访问</span>
+              </a>
             </div>
           </div>
-        </article>
+          </article>
+        </Transition>
       </div>
 
-      <!-- Empty State -->
-      <div v-else class="empty-state">
-        <span>该分类下暂无作品</span>
-      </div>
+        <!-- Empty State -->
+        <div v-else class="empty-state">
+          <span>暂无作品</span>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArrowUpRight, Github } from 'lucide-vue-next'
 import { useBlogStore } from '@/store'
+import WorksLegacyMobile from '@/components/work/WorksLegacyMobile.vue'
 
 const blogStore = useBlogStore()
-const works = computed(() => blogStore.filteredWorks)
-const categories = computed(() => blogStore.workCategories)
-const currentWorkCategory = computed(() => blogStore.currentWorkCategory)
+const works = computed(() => blogStore.allWorks)
+
+// 移动端（≤680px）沿用改版前的分类 + 作品列表布局
+const MOBILE_QUERY = '(max-width: 680px)'
+const mobileMedia = window.matchMedia(MOBILE_QUERY)
+const isMobile = ref(mobileMedia.matches)
+
+const onMobileChange = (event: MediaQueryListEvent) => {
+  isMobile.value = event.matches
+  if (event.matches) {
+    stopAutoSwitch()
+  } else {
+    startAutoSwitch()
+    updateIndicator()
+  }
+}
+
+// ============ 选中态白色胶囊：跟随当前作品名滑动 ============
+const filterNav = ref<HTMLElement | null>(null)
+const tabRefs = new Map<string, HTMLElement>()
+const indicatorStyle = ref<Record<string, string>>({})
+const indicatorReady = ref(false)
+
+const setTabRef = (id: string, el: unknown) => {
+  if (el instanceof HTMLElement) tabRefs.set(id, el)
+  else tabRefs.delete(id)
+}
+
+const updateIndicator = () => {
+  nextTick(() => {
+    const nav = filterNav.value
+    const tab = selectedId.value ? tabRefs.get(selectedId.value) : null
+    if (!nav || !tab) return
+    const navRect = nav.getBoundingClientRect()
+    const rect = tab.getBoundingClientRect()
+    indicatorStyle.value = {
+      width: `${Math.round(rect.width)}px`,
+      height: `${Math.round(rect.height)}px`,
+      transform: `translate(${Math.round(rect.left - navRect.left)}px, ${Math.round(rect.top - navRect.top)}px)`,
+    }
+    if (!indicatorReady.value) {
+      requestAnimationFrame(() => {
+        indicatorReady.value = true
+      })
+    }
+  })
+}
+
+// 当前选中的作品：默认选中第一项，接口数据变化后若失效则回退到第一项
+const selectedId = ref<string | null>(null)
+const selectedWork = computed(
+  () => works.value.find(work => work.id === selectedId.value) ?? null
+)
+// 切换方向：1 向后（新卡片从右侧揭入），-1 向前（从左侧揭入）
+const switchDir = ref(1)
+
+// 作品每 7 秒自动切换，手动点击后重新计时
+const AUTO_SWITCH_MS = 7000
+let autoTimer: number | null = null
+
+function stopAutoSwitch() {
+  if (autoTimer !== null) {
+    window.clearInterval(autoTimer)
+    autoTimer = null
+  }
+}
+
+const startAutoSwitch = () => {
+  stopAutoSwitch()
+  // 移动端展示全部作品列表，不需要自动切换
+  if (isMobile.value || works.value.length < 2) return
+  autoTimer = window.setInterval(() => {
+    // 页面切到后台时暂停切换
+    if (document.hidden) return
+    const list = works.value
+    const currentIndex = list.findIndex(work => work.id === selectedId.value)
+    const next = list[(currentIndex + 1) % list.length]
+    if (next) {
+      switchDir.value = 1
+      selectedId.value = next.id
+    }
+  }, AUTO_SWITCH_MS)
+}
+
+const selectWork = (id: string) => {
+  const list = works.value
+  const from = list.findIndex(work => work.id === selectedId.value)
+  const to = list.findIndex(work => work.id === id)
+  if (from !== -1 && to !== -1 && to !== from) {
+    switchDir.value = to > from ? 1 : -1
+  }
+  selectedId.value = id
+  startAutoSwitch()
+}
+
+watch(
+  works,
+  (list) => {
+    if (list.length === 0) {
+      selectedId.value = null
+      stopAutoSwitch()
+      return
+    }
+    if (!list.some(work => work.id === selectedId.value)) {
+      selectedId.value = list[0].id
+    }
+    startAutoSwitch()
+    updateIndicator()
+  },
+  { immediate: true }
+)
+
+// 选中作品变化时，白色胶囊滑向新的作品名
+watch(selectedId, () => updateIndicator())
+
+onUnmounted(() => {
+  mobileMedia.removeEventListener('change', onMobileChange)
+  window.removeEventListener('resize', updateIndicator)
+  stopAutoSwitch()
+})
 
 // 首次进入时等待分类和作品接口，接口未返回前显示骨架屏
 const pageLoading = ref(true)
 const showSkeleton = computed(
   () => works.value.length === 0 && (pageLoading.value || blogStore.workLoading)
 )
-
-const setWorkCategory = (category: string) => {
-  blogStore.setWorkCategory(category)
-}
 
 // 展示到年.月即可，兼容 "2024-01-15" 与 "2024-01-15 10:00:00"
 const formatDate = (value: string) => {
@@ -165,6 +289,9 @@ const onCoverError = (id: string) => {
 }
 
 onMounted(async () => {
+  mobileMedia.addEventListener('change', onMobileChange)
+  window.addEventListener('resize', updateIndicator)
+  document.fonts?.ready.then(updateIndicator)
   try {
     await blogStore.fetchCategories(2)
     await blogStore.fetchWorks()
@@ -176,8 +303,7 @@ onMounted(async () => {
 
 <style scoped>
 .works-page {
-  padding: 32px 0 56px;
-  min-height: calc(100vh - 64px);
+  padding: 32px 0;
   display: flex;
   flex-direction: column;
 }
@@ -186,10 +312,12 @@ onMounted(async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
-/* Category Filter：居中胶囊，选中用浅底主题色而非实心 */
-.category-filter {
+/* Work Filter：作品名称胶囊，白色选中态在标签间滑动 */
+.work-filter {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,10 +326,29 @@ onMounted(async () => {
   margin-bottom: 32px;
 }
 
-.category-tab {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+/* 选中态白色胶囊：位置和宽度跟随当前作品名 */
+.work-tab-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: var(--radius-full);
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.work-tab-indicator.is-ready {
+  opacity: 1;
+  transition: transform 0.45s cubic-bezier(0.34, 1.25, 0.64, 1),
+    width 0.45s cubic-bezier(0.34, 1.25, 0.64, 1), height 0.2s ease,
+    opacity 0.25s ease;
+}
+
+.work-tab {
+  position: relative;
+  z-index: 1;
+  max-width: 18em;
   padding: 7px 16px;
   border: none;
   border-radius: var(--radius-full);
@@ -209,84 +356,119 @@ onMounted(async () => {
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.category-tab:hover {
+.work-tab:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-.category-tab.active {
-  background: color-mix(in srgb, var(--primary-color) 12%, var(--bg-secondary));
-  color: var(--primary-color);
+/* 选中态由底层白色胶囊呈现，按钮本身透明 */
+.work-tab.active,
+.work-tab.active:hover {
+  background: transparent;
+  color: #0b1220;
 }
 
-[data-theme='dark'] .category-tab.active {
-  background: color-mix(in srgb, var(--primary-color) 20%, var(--bg-secondary));
-}
-
-.category-count {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.02em;
-  opacity: 0.65;
-}
-
-.category-tab.active .category-count {
-  opacity: 1;
-}
-
-/* ============ Works Grid ============ */
-.works-grid {
+/* ============ 长条作品卡片 ============ */
+.work-panel {
+  --panel-h: clamp(520px, 64vh, 700px);
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 26px;
-  align-items: stretch;
-}
-
-.work-tile {
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  min-height: var(--panel-h);
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
-  animation: tile-enter 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
-  animation-delay: calc(var(--i, 0) * 60ms);
+  box-shadow: var(--shadow-sm);
 }
 
-@keyframes tile-enter {
+/* 切换作品：新卡片从切换方向滑入并覆盖旧卡片，全程不透明，避免白屏闪烁 */
+.work-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.work-switch-enter-active {
+  position: relative;
+  z-index: 2;
+  will-change: transform;
+  transition: transform 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* 旧卡片保持不透明垫在下方，等新卡片完全覆盖后再移除 */
+.work-switch-leave-active {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 略长于入场时间，确保新卡片完全覆盖后再移除旧卡片 */
+  transition: opacity 0.7s linear;
+}
+
+.work-switch-enter-from {
+  transform: translateX(calc(100% * var(--switch-dir, 1)));
+}
+
+.work-switch-leave-to {
+  opacity: 0.99;
+}
+
+/* 新卡片封面轻微回落 */
+.work-switch-enter-active .panel-cover img {
+  animation: switch-cover-settle 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+}
+
+@keyframes switch-cover-settle {
   from {
-    opacity: 0;
-    transform: translateY(14px);
+    transform: scale(1.06);
   }
   to {
-    opacity: 1;
-    transform: none;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-switch-enter-active,
+  .work-switch-leave-active {
+    transition: none;
+  }
+
+  .work-switch-enter-active .panel-cover img {
+    animation: none;
   }
 }
 
 /* 加载骨架屏 */
-.skeleton-tile {
+.skeleton-panel {
   pointer-events: none;
 }
 
 .skeleton-cover {
-  width: 100%;
-  aspect-ratio: 16 / 10;
+  min-height: var(--panel-h);
 }
 
 .skeleton-line {
   display: block;
-  height: 10px;
+  height: 12px;
   border-radius: 6px;
 }
 
+.skeleton-meta {
+  width: 22%;
+  height: 10px;
+}
+
 .skeleton-title {
-  width: 52%;
-  height: 14px;
+  width: 46%;
+  height: 22px;
 }
 
 .skeleton-desc {
@@ -298,7 +480,8 @@ onMounted(async () => {
 }
 
 .skeleton-foot {
-  width: 30%;
+  width: 24%;
+  height: 28px;
   margin-top: auto;
 }
 
@@ -324,22 +507,22 @@ onMounted(async () => {
 }
 
 /* 封面 */
-.tile-cover {
+.panel-cover {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 10;
+  min-height: var(--panel-h);
   overflow: hidden;
   background: var(--bg-secondary);
   cursor: default;
   isolation: isolate;
 }
 
-.tile-cover.is-link {
+.panel-cover.is-link {
   cursor: pointer;
 }
 
 /* 加载中的骨架微光 */
-.tile-cover::before {
+.panel-cover::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -358,7 +541,7 @@ onMounted(async () => {
   pointer-events: none;
 }
 
-[data-theme='dark'] .tile-cover::before {
+[data-theme='dark'] .panel-cover::before {
   background-image: linear-gradient(
     105deg,
     transparent 32%,
@@ -369,7 +552,7 @@ onMounted(async () => {
   );
 }
 
-.tile-cover.is-loaded::before {
+.panel-cover.is-loaded::before {
   opacity: 0;
   animation: none;
 }
@@ -383,8 +566,9 @@ onMounted(async () => {
   }
 }
 
-.tile-cover img {
-  position: relative;
+.panel-cover img {
+  position: absolute;
+  inset: 0;
   z-index: 1;
   width: 100%;
   height: 100%;
@@ -393,160 +577,149 @@ onMounted(async () => {
   transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.tile-cover.is-loaded img {
+.panel-cover.is-loaded img {
   opacity: 1;
 }
 
-.tile-cover.is-failed img {
+.panel-cover.is-failed img {
   display: none;
 }
 
 /* 内容 */
-.tile-body {
-  flex: 1;
+.panel-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px 20px 20px;
+  gap: 14px;
+  padding: 36px 40px;
   min-width: 0;
 }
 
-.tile-meta {
+.panel-meta {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.6875rem;
+  gap: 8px;
+  font-size: 0.75rem;
   line-height: 1;
   min-width: 0;
 }
 
-.tile-meta-category {
+.panel-meta-category {
   font-weight: 600;
   letter-spacing: 0.03em;
   color: var(--primary-color);
 }
 
-.tile-meta-divider {
+.panel-meta-divider {
   color: var(--text-tertiary);
   opacity: 0.5;
 }
 
-.tile-meta-date {
+.panel-meta-date {
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
   color: var(--text-tertiary);
 }
 
-.tile-title {
+.panel-title {
   margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 600;
-  line-height: 1.4;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
   color: var(--text-primary);
   transition: color 0.25s ease;
 }
 
-.tile-title a {
+.panel-title a {
   color: inherit;
 }
 
-.tile-desc {
+.panel-desc {
   margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.7;
+  font-size: 0.875rem;
+  line-height: 1.8;
   color: var(--text-tertiary);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.tile-tags {
+.panel-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.tile-tag {
-  padding: 2px 8px;
+.panel-tag {
+  padding: 3px 10px;
   border-radius: var(--radius-full);
   background: var(--bg-secondary);
   color: var(--text-tertiary);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
-.tile-footer {
+.panel-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 18px;
   margin-top: auto;
-  padding-top: 6px;
+  padding-top: 10px;
 }
 
-.tile-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.tile-action {
+.panel-action {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
+  gap: 5px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
   transition: color var(--transition-fast);
 }
 
-.tile-action:hover {
+.panel-action:hover {
   color: var(--primary-color);
 }
 
-.tile-action.is-primary {
+.panel-action.is-primary {
   color: var(--primary-color);
 }
 
-.tile-action.is-primary:hover {
+.panel-action.is-primary:hover {
   color: var(--text-primary);
 }
 
-/* 悬停：整卡抬升、封面轻推、标题变色 */
+/* 悬停：封面轻推、标题变色 */
 @media (hover: hover) and (pointer: fine) {
-  .work-tile:hover {
-    transform: translateY(-4px);
-    border-color: color-mix(in srgb, var(--primary-color) 32%, var(--border-color));
-    box-shadow: var(--shadow-lg);
+  .work-panel:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 28%, var(--border-color));
   }
 
-  .work-tile:hover .tile-cover img {
-    transform: scale(1.05);
+  .work-panel:hover .panel-cover img {
+    transform: scale(1.03);
   }
 
-  .work-tile:hover .tile-title {
+  .work-panel:hover .panel-title {
     color: var(--primary-color);
   }
 }
 
 /* 触摸设备无悬停，链接用主题色常驻提示 */
 @media (hover: none), (pointer: coarse) {
-  .tile-action.is-primary {
+  .panel-action.is-primary {
     color: var(--primary-color);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .work-tile,
   .skeleton-cover,
   .skeleton-line {
     animation: none;
   }
 
-  .tile-cover::before {
+  .panel-cover::before {
     animation: none;
   }
 
-  .tile-cover img {
+  .panel-cover img {
     transition: none;
   }
 }
@@ -560,9 +733,16 @@ onMounted(async () => {
 
 /* Responsive */
 @media (max-width: 1100px) {
-  .works-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+  .work-panel {
+    --panel-h: clamp(460px, 56vh, 600px);
+  }
+
+  .panel-body {
+    padding: 28px 30px;
+  }
+
+  .panel-title {
+    font-size: 1.375rem;
   }
 }
 
@@ -571,7 +751,12 @@ onMounted(async () => {
     padding: 20px 0 32px;
   }
 
-  .category-filter {
+  /* 移动端保持原来的顶部对齐布局，不做垂直居中 */
+  .works-page > .container {
+    justify-content: flex-start;
+  }
+
+  .work-filter {
     flex-wrap: nowrap;
     justify-content: flex-start;
     overflow-x: auto;
@@ -581,31 +766,43 @@ onMounted(async () => {
     scrollbar-width: none;
   }
 
-  .category-filter::-webkit-scrollbar {
+  .work-filter::-webkit-scrollbar {
     display: none;
   }
 
-  .category-tab {
+  .work-tab {
+    max-width: 14em;
     padding: 6px 14px;
     font-size: 0.8125rem;
     flex-shrink: 0;
   }
 
-  .works-grid {
+  .work-panel {
     grid-template-columns: 1fr;
-    gap: 16px;
+    min-height: 0;
   }
 
-  .tile-cover {
+  .panel-cover {
+    min-height: 0;
     aspect-ratio: 16 / 9;
   }
 
-  .tile-body {
-    padding: 16px;
+  .skeleton-cover {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
   }
 
-  .tile-title {
-    font-size: 1rem;
+  .panel-body {
+    padding: 18px 16px 20px;
+    gap: 10px;
+  }
+
+  .panel-title {
+    font-size: 1.125rem;
+  }
+
+  .panel-desc {
+    -webkit-line-clamp: 4;
   }
 }
 </style>

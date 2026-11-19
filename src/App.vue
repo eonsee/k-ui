@@ -2,7 +2,13 @@
   <a-config-provider :theme="antdTheme">
     <div class="app-container" :class="{ 'dark-mode': isDark }">
       <AppHeader />
-      <main class="main-content" :class="{ 'main-content--home': route.path === '/' }">
+      <main
+        class="main-content"
+        :class="{
+          'main-content--home': route.path === '/',
+          'main-content--fill': route.path === '/works',
+        }"
+      >
         <router-view />
       </main>
       <AppFooter />
@@ -149,6 +155,16 @@ provide('theme', { isDark, toggleTheme })
 /* 首页 Hero 延伸到导航栏下方，让透明导航浮在内容之上 */
 .main-content--home {
   padding-top: 0;
+}
+
+/* 作品页内容较少：让页面填满主区域，使卡片与底部栏间距均衡 */
+.main-content--fill {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content--fill > .works-page {
+  flex: 1 0 auto;
 }
 
 .fade-enter-active,

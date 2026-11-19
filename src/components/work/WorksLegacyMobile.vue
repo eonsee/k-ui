@@ -1,0 +1,500 @@
+<template>
+  <div class="legacy-works">
+    <!-- Category Filter：横向滑动胶囊 -->
+    <nav class="category-filter" aria-label="作品分类">
+      <button
+        v-for="category in categories"
+        :key="category.id"
+        class="category-tab"
+        :class="{ active: currentWorkCategory === category.name }"
+        @click="setWorkCategory(category.name)"
+      >
+        <span>{{ category.name }}</span>
+        <span v-if="!showSkeleton" class="category-count">{{ category.count }}</span>
+      </button>
+    </nav>
+
+    <!-- 加载骨架屏 -->
+    <div
+      v-if="showSkeleton"
+      class="works-grid"
+      aria-busy="true"
+      aria-label="作品加载中"
+    >
+      <div v-for="n in 4" :key="n" class="work-tile skeleton-tile">
+        <div class="skeleton-cover"></div>
+        <div class="tile-body">
+          <span class="skeleton-line skeleton-title"></span>
+          <span class="skeleton-line skeleton-desc"></span>
+          <span class="skeleton-line skeleton-desc skeleton-desc-short"></span>
+          <span class="skeleton-line skeleton-foot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 作品卡片列表：单列纵向排列 -->
+    <div v-else-if="works.length > 0" class="works-grid">
+      <article
+        v-for="(work, index) in works"
+        :key="work.id"
+        class="work-tile"
+        :style="{ '--i': index }"
+      >
+        <a
+          class="tile-cover"
+          :class="{
+            'is-link': Boolean(work.link),
+            'is-loaded': loadedCovers.has(work.id),
+            'is-failed': failedCovers.has(work.id),
+          }"
+          :href="work.link || undefined"
+          :target="work.link ? '_blank' : undefined"
+          :rel="work.link ? 'noopener noreferrer' : undefined"
+          :aria-label="work.link ? `访问 ${work.title}` : undefined"
+        >
+          <img
+            :src="work.cover"
+            :alt="work.title"
+            loading="lazy"
+            decoding="async"
+            @load="onCoverLoad(work.id)"
+            @error="onCoverError(work.id)"
+          />
+        </a>
+
+        <div class="tile-body">
+          <h3 class="tile-title">
+            <a
+              v-if="work.link"
+              :href="work.link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >{{ work.title }}</a>
+            <template v-else>{{ work.title }}</template>
+          </h3>
+
+          <p v-if="work.description" class="tile-desc">{{ work.description }}</p>
+
+          <div v-if="work.tags.length" class="tile-tags">
+            <span v-for="tag in work.tags.slice(0, 3)" :key="tag" class="tile-tag">{{ tag }}</span>
+          </div>
+
+          <div class="tile-footer">
+            <div class="tile-meta">
+              <span v-if="work.category" class="tile-meta-category">{{ work.category }}</span>
+              <span v-if="work.category && work.createdAt" class="tile-meta-divider" aria-hidden="true">/</span>
+              <span v-if="work.createdAt" class="tile-meta-date">{{ formatDate(work.createdAt) }}</span>
+            </div>
+
+            <div v-if="work.github || work.link" class="tile-actions">
+              <a
+                v-if="work.github"
+                :href="work.github"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="tile-action"
+              >
+                <Github :size="14" />
+                <span>源码</span>
+              </a>
+              <a
+                v-if="work.link"
+                :href="work.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="tile-action is-primary"
+              >
+                <ArrowUpRight :size="14" />
+                <span>访问</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="empty-state">
+      <span>该分类下暂无作品</span>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { ArrowUpRight, Github } from 'lucide-vue-next'
+import { useBlogStore } from '@/store'
+
+const props = defineProps<{
+  loading?: boolean
+}>()
+
+const blogStore = useBlogStore()
+const works = computed(() => blogStore.filteredWorks)
+const categories = computed(() => blogStore.workCategories)
+const currentWorkCategory = computed(() => blogStore.currentWorkCategory)
+
+const showSkeleton = computed(
+  () => works.value.length === 0 && (props.loading || blogStore.workLoading)
+)
+
+const setWorkCategory = (category: string) => {
+  blogStore.setWorkCategory(category)
+}
+
+// 展示到年.月即可，兼容 "2024-01-15" 与 "2024-01-15 10:00:00"
+const formatDate = (value: string) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+// 封面加载完成前显示微光，加载后淡入；失败也结束加载态
+const loadedCovers = ref(new Set<string>())
+const failedCovers = ref(new Set<string>())
+
+const onCoverLoad = (id: string) => {
+  loadedCovers.value.add(id)
+}
+
+const onCoverError = (id: string) => {
+  loadedCovers.value.add(id)
+  failedCovers.value.add(id)
+}
+</script>
+
+<style scoped>
+/* Category Filter：移动端横向滑动 */
+.category-filter {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  gap: 8px;
+  margin: 0 -16px 20px;
+  padding: 0 16px 4px;
+  scrollbar-width: none;
+}
+
+.category-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 选中态：纯白胶囊，无边框、无阴影 */
+.category-tab.active {
+  background: #fff;
+  color: #0b1220;
+}
+
+.category-count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  opacity: 0.65;
+}
+
+.category-tab.active .category-count {
+  opacity: 1;
+}
+
+/* 单列作品列表 */
+.works-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.work-tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  animation: tile-enter 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 骨架屏 */
+.skeleton-tile {
+  pointer-events: none;
+}
+
+.skeleton-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.skeleton-line {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+}
+
+.skeleton-title {
+  width: 52%;
+  height: 14px;
+}
+
+.skeleton-desc {
+  width: 100%;
+}
+
+.skeleton-desc-short {
+  width: 68%;
+}
+
+.skeleton-foot {
+  width: 30%;
+  margin-top: auto;
+}
+
+.skeleton-cover,
+.skeleton-line {
+  background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--text-tertiary) 10%, var(--bg-secondary)) 25%,
+      color-mix(in srgb, var(--text-tertiary) 22%, var(--bg-secondary)) 37%,
+      color-mix(in srgb, var(--text-tertiary) 10%, var(--bg-secondary)) 63%
+    )
+    0 0 / 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* 封面 */
+.tile-cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  cursor: default;
+  isolation: isolate;
+}
+
+.tile-cover.is-link {
+  cursor: pointer;
+}
+
+.tile-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+      105deg,
+      transparent 32%,
+      rgba(148, 163, 184, 0.1) 46%,
+      rgba(148, 163, 184, 0.2) 52%,
+      rgba(148, 163, 184, 0.1) 58%,
+      transparent 72%
+    )
+    0 0 / 220% 100%;
+  animation: cover-shimmer 1.7s linear infinite;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+[data-theme='dark'] .tile-cover::before {
+  background-image: linear-gradient(
+    105deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.04) 46%,
+    rgba(255, 255, 255, 0.09) 52%,
+    rgba(255, 255, 255, 0.04) 58%,
+    transparent 72%
+  );
+}
+
+.tile-cover.is-loaded::before {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes cover-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+.tile-cover img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.tile-cover.is-loaded img {
+  opacity: 1;
+}
+
+.tile-cover.is-failed img {
+  display: none;
+}
+
+/* 内容 */
+.tile-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.tile-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.6875rem;
+  line-height: 1;
+  min-width: 0;
+}
+
+.tile-meta-category {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--primary-color);
+}
+
+.tile-meta-divider {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.tile-meta-date {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.tile-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.tile-title a {
+  color: inherit;
+}
+
+.tile-desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--text-tertiary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tile-tag {
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  font-size: 0.6875rem;
+}
+
+.tile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.tile-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tile-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.tile-action.is-primary {
+  color: var(--primary-color);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-tile,
+  .skeleton-cover,
+  .skeleton-line {
+    animation: none;
+  }
+
+  .tile-cover::before {
+    animation: none;
+  }
+
+  .tile-cover img {
+    transition: none;
+  }
+}
+</style>

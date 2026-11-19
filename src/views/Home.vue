@@ -7,19 +7,40 @@
         <HeroBubbles />
       </div>
       <div class="container hero-content">
-        <div
-          class="hero-text"
-          data-cursor="blend"
-          @pointerenter="onCursorEnter"
-          @pointermove="onCursorMove"
-          @pointerleave="onCursorLeave"
-        >
+        <div class="hero-text">
           <div class="hero-avatar-wrap animate-fade-in-up">
-            <div class="hero-avatar-wrapper">
+            <div
+              class="hero-avatar-wrapper"
+              @pointerenter="startAvatarEmojis"
+              @pointerleave="stopAvatarEmojis"
+              @click="onAvatarClick"
+            >
               <img src="/my.jpg" alt="oaken - 全栈开发工程师" class="hero-avatar" />
               <div class="avatar-ring"></div>
             </div>
+            <!-- 悬停头像时连续冒出的微信 emoji -->
+            <div class="avatar-emoji-layer" aria-hidden="true">
+              <span
+                v-for="item in avatarEmojis"
+                :key="item.id"
+                class="avatar-emoji"
+                :style="{
+                  '--x': `${item.x}px`,
+                  '--y': `${item.y}px`,
+                  '--r': `${item.rot}deg`,
+                }"
+                @animationend="removeAvatarEmoji(item.id)"
+              >{{ item.char }}</span>
+            </div>
           </div>
+          <!-- blend 光标仅作用于文字区域，不包含头像 -->
+          <div
+            class="hero-copy"
+            data-cursor="blend"
+            @pointerenter="onCursorEnter"
+            @pointermove="onCursorMove"
+            @pointerleave="onCursorLeave"
+          >
           <h1 class="hero-title animate-fade-in-up" aria-label="oaken">
             <span class="terminal-line">
               <span class="terminal-prompt" aria-hidden="true">&gt;</span>
@@ -48,6 +69,7 @@
               <span class="hero-stat-value">{{ stat.value }}</span>
               <span class="hero-stat-label">{{ stat.label }}</span>
             </div>
+          </div>
           </div>
         </div>
         <div class="hero-visual animate-fade-in" style="animation-delay: 0.4s">
@@ -321,6 +343,74 @@ const onCursorLeave = () => {
   ensureCursorLoop()
 }
 
+// ============ 头像：三击进入管理后台 ============
+const ADMIN_URL = 'http://api.mayekun.com/'
+const TRIPLE_CLICK_WINDOW = 600
+let avatarClickCount = 0
+let avatarClickTimer: number | null = null
+
+const onAvatarClick = () => {
+  avatarClickCount += 1
+  if (avatarClickTimer !== null) window.clearTimeout(avatarClickTimer)
+  if (avatarClickCount >= 3) {
+    avatarClickCount = 0
+    avatarClickTimer = null
+    window.location.href = ADMIN_URL
+    return
+  }
+  avatarClickTimer = window.setTimeout(() => {
+    avatarClickCount = 0
+    avatarClickTimer = null
+  }, TRIPLE_CLICK_WINDOW)
+}
+
+// ============ 头像悬停：连续冒出微信 emoji ============
+const WECHAT_EMOJIS = [
+  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+  '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '😜',
+  '😝', '😎', '🤩', '🥳', '🤗', '🤭', '😋', '😚',
+]
+
+interface AvatarEmojiPop {
+  id: number
+  char: string
+  x: number
+  y: number
+  rot: number
+}
+
+const avatarEmojis = ref<AvatarEmojiPop[]>([])
+let avatarEmojiSeq = 0
+let avatarEmojiTimer: number | null = null
+
+const spawnAvatarEmoji = () => {
+  const angle = Math.random() * Math.PI * 2
+  avatarEmojis.value.push({
+    id: ++avatarEmojiSeq,
+    char: WECHAT_EMOJIS[Math.floor(Math.random() * WECHAT_EMOJIS.length)],
+    x: Math.round(Math.cos(angle) * (36 + Math.random() * 18)),
+    y: Math.round(Math.sin(angle) * (30 + Math.random() * 16)),
+    rot: Math.round((Math.random() - 0.5) * 40),
+  })
+}
+
+const startAvatarEmojis = () => {
+  stopAvatarEmojis()
+  spawnAvatarEmoji()
+  avatarEmojiTimer = window.setInterval(spawnAvatarEmoji, 180)
+}
+
+const stopAvatarEmojis = () => {
+  if (avatarEmojiTimer !== null) {
+    window.clearInterval(avatarEmojiTimer)
+    avatarEmojiTimer = null
+  }
+}
+
+const removeAvatarEmoji = (id: number) => {
+  avatarEmojis.value = avatarEmojis.value.filter(item => item.id !== id)
+}
+
 onMounted(() => {
   resizeCursorCanvas()
   window.addEventListener('resize', resizeCursorCanvas)
@@ -328,6 +418,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', resizeCursorCanvas)
+  stopAvatarEmojis()
+  if (avatarClickTimer !== null) window.clearTimeout(avatarClickTimer)
   if (cursorRaf) cancelAnimationFrame(cursorRaf)
 })
 
@@ -540,9 +632,46 @@ onUnmounted(() => {
 }
 
 .hero-avatar-wrap {
+  position: relative;
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+}
+
+/* 头像悬停冒出的 emoji */
+.avatar-emoji-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.avatar-emoji {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+  animation: avatar-emoji-pop 0.95s ease-out forwards;
+}
+
+@keyframes avatar-emoji-pop {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.4) rotate(0deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y) - 68px)) scale(1.1)
+      rotate(var(--r));
+  }
 }
 
 .hero-avatar-wrapper {
