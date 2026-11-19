@@ -206,7 +206,7 @@ onUnmounted(() => {
 }
 
 .site-stat-inline strong {
-  color: var(--primary-color);
+  color: var(--text-secondary);
   font-family: var(--font-mono);
   font-weight: 500;
 }

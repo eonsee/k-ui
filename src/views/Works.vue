@@ -421,28 +421,10 @@ onMounted(async () => {
   opacity: 0.99;
 }
 
-/* 新卡片封面轻微回落 */
-.work-switch-enter-active .panel-cover img {
-  animation: switch-cover-settle 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
-}
-
-@keyframes switch-cover-settle {
-  from {
-    transform: scale(1.06);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .work-switch-enter-active,
   .work-switch-leave-active {
     transition: none;
-  }
-
-  .work-switch-enter-active .panel-cover img {
-    animation: none;
   }
 }
 
@@ -574,7 +556,7 @@ onMounted(async () => {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: opacity 0.45s ease;
 }
 
 .panel-cover.is-loaded img {
@@ -691,10 +673,6 @@ onMounted(async () => {
 @media (hover: hover) and (pointer: fine) {
   .work-panel:hover {
     border-color: color-mix(in srgb, var(--primary-color) 28%, var(--border-color));
-  }
-
-  .work-panel:hover .panel-cover img {
-    transform: scale(1.03);
   }
 
   .work-panel:hover .panel-title {

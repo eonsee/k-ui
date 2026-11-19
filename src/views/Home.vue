@@ -24,12 +24,12 @@
                 v-for="item in avatarEmojis"
                 :key="item.id"
                 class="avatar-emoji"
+                :data-id="item.id"
                 :style="{
                   '--x': `${item.x}px`,
                   '--y': `${item.y}px`,
-                  '--r': `${item.rot}deg`,
                 }"
-                @animationend="removeAvatarEmoji(item.id)"
+                @animationend="onAvatarEmojiAnimationEnd(item.id)"
               >{{ item.char }}</span>
             </div>
           </div>
@@ -376,7 +376,6 @@ interface AvatarEmojiPop {
   char: string
   x: number
   y: number
-  rot: number
 }
 
 const avatarEmojis = ref<AvatarEmojiPop[]>([])
@@ -390,14 +389,64 @@ const spawnAvatarEmoji = () => {
     char: WECHAT_EMOJIS[Math.floor(Math.random() * WECHAT_EMOJIS.length)],
     x: Math.round(Math.cos(angle) * (36 + Math.random() * 18)),
     y: Math.round(Math.sin(angle) * (30 + Math.random() * 16)),
-    rot: Math.round((Math.random() - 0.5) * 40),
   })
 }
 
 const startAvatarEmojis = () => {
-  stopAvatarEmojis()
+  if (avatarEmojiTimer !== null) {
+    window.clearInterval(avatarEmojiTimer)
+    avatarEmojiTimer = null
+  }
   spawnAvatarEmoji()
   avatarEmojiTimer = window.setInterval(spawnAvatarEmoji, 180)
+}
+
+const removeAvatarEmoji = (id: number) => {
+  avatarEmojis.value = avatarEmojis.value.filter(item => item.id !== id)
+}
+
+// 正在下落的 emoji 忽略上浮动画结束事件，避免提前消失
+const fallingEmojiIds = new Set<number>()
+
+const onAvatarEmojiAnimationEnd = (id: number) => {
+  if (fallingEmojiIds.has(id)) return
+  removeAvatarEmoji(id)
+}
+
+// 鼠标移开：已经升起的 emoji 从当前位置全部掉落，
+// 靠近头像左右边缘的会向外侧翻滚着掉出边框
+const fallAvatarEmoji = (el: HTMLElement, item: AvatarEmojiPop) => {
+  const style = getComputedStyle(el)
+  const from = style.transform === 'none' ? 'matrix(1, 0, 0, 1, 0, 0)' : style.transform
+  const opacity = style.opacity
+  const side = item.x < 0 ? -1 : 1
+  const nearEdge = Math.abs(item.x) > 20
+  const driftX = nearEdge ? side * (20 + Math.random() * 18) : Math.round((Math.random() - 0.5) * 18)
+  const roll = nearEdge ? side * (70 + Math.random() * 60) : Math.round((Math.random() - 0.5) * 90)
+
+  const anim = el.animate(
+    [
+      { transform: from, opacity, offset: 0 },
+      {
+        transform: `${from} translate(${driftX}px, 92px) rotate(${roll * 0.6}deg)`,
+        opacity,
+        offset: 0.6,
+      },
+      {
+        transform: `${from} translate(${driftX}px, 152px) rotate(${roll}deg)`,
+        opacity: 0,
+        offset: 1,
+      },
+    ],
+    { duration: 620, easing: 'cubic-bezier(0.45, 0, 0.9, 0.6)', fill: 'forwards' }
+  )
+  fallingEmojiIds.add(item.id)
+  anim.finished
+    .then(() => {
+      fallingEmojiIds.delete(item.id)
+      removeAvatarEmoji(item.id)
+    })
+    .catch(() => {})
 }
 
 const stopAvatarEmojis = () => {
@@ -405,10 +454,11 @@ const stopAvatarEmojis = () => {
     window.clearInterval(avatarEmojiTimer)
     avatarEmojiTimer = null
   }
-}
-
-const removeAvatarEmoji = (id: number) => {
-  avatarEmojis.value = avatarEmojis.value.filter(item => item.id !== id)
+  document.querySelectorAll<HTMLElement>('.avatar-emoji').forEach(el => {
+    const id = Number(el.dataset.id)
+    const item = avatarEmojis.value.find(emoji => emoji.id === id)
+    if (item) fallAvatarEmoji(el, item)
+  })
 }
 
 onMounted(() => {
@@ -662,15 +712,14 @@ onUnmounted(() => {
 @keyframes avatar-emoji-pop {
   0% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.4) rotate(0deg);
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.4);
   }
   18% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y) - 68px)) scale(1.1)
-      rotate(var(--r));
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y) - 68px)) scale(1.1);
   }
 }
 
